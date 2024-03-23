@@ -1,0 +1,21 @@
+server:
+  error:
+    whitelabel:
+      enabled: false
+  address: 0.0.0.0
+  port: 8080
+spring:
+
+  servlet:
+    multipart:
+      enabled: true
+  datasource:
+    url: jdbc:postgresql://158.160.13.203:5432/admin
+    username: admin
+    password: admin777
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    database: postgresql
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: create
