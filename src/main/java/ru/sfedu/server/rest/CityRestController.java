@@ -40,4 +40,15 @@ public class CityRestController {
 
         return new ResponseEntity<>(HttpStatus.OK);
     }
+
+    @GetMapping
+    public ResponseEntity<List<City>> getCityByName(@RequestParam String city){
+        log.info("Get city with name like={}",city);
+        List<City> cities = dataService.getCityByName(city);
+        if(cities.isEmpty()){
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        return new ResponseEntity<>(cities,HttpStatus.OK);
+    }
 }
