@@ -42,9 +42,10 @@ public class RouteRestController {
         return new ResponseEntity<>(routes, HttpStatus.OK);
     }
 
+    @Operation(summary = "Получение списка маршрутов", description = "Позволяет получить список маршуртов по названию города и like названию маршрута")
     @GetMapping("/")
-    public ResponseEntity<List<RouteDTO>> getAllByCity(@RequestParam(name = "city") @Parameter(description = "Название города") String city,
-                                                       @RequestParam(name = "routeName") String routeName) {
+    public ResponseEntity<List<RouteDTO>> getByCityAndName(@RequestParam(name = "city") @Parameter(description = "Название города") String city,
+                                                           @RequestParam(name = "routeName") @Parameter(description = "like названию маршрута") String routeName) {
         List<RouteDTO> routes = dataService.getByCityAndRouteNameLike(routeName,city).stream().map(value -> converter.convertToDto(value)).toList();
         if (routes.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);

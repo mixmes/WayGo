@@ -56,9 +56,10 @@ public class PointRestController {
         return new ResponseEntity<>(points, HttpStatus.OK);
     }
 
+    @Operation(summary = "Получение списка точек", description = "Позволяет получить список точки по названию города и like названию точки")
     @GetMapping("/")
-    public ResponseEntity<List<PointDTO>> getByCityAndName(@RequestParam(name = "city") String city,
-                                                           @RequestParam(name = "pointName") String pointName) {
+    public ResponseEntity<List<PointDTO>> getByCityAndName(@RequestParam(name = "city") @Parameter(description = "Название города") String city,
+                                                           @RequestParam(name = "pointName") @Parameter(description = "like название точки") String pointName) {
         log.info(city+" "+ pointName);
         List<PointDTO> points = dataService.getByCityAndPointName(city,pointName).stream().map(value -> pointConverter.convertToDto(value)).toList();
         if (points.isEmpty()) {
