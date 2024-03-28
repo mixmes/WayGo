@@ -12,14 +12,12 @@ import java.util.Set;
 @Setter
 @NoArgsConstructor
 @Entity
-@Table(name = "ТочкаНаКарта")
 public class Point {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_point")
     private long id;
 
-    @Column(name = "name_point")
     private String pointName;
 
     @Column(name = "adress")

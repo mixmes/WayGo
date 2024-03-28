@@ -29,7 +29,11 @@ public class PointDataService {
         return repository.findById(id);
     }
 
-    public List<Point> getAllByCity(String city){
+    public List<Point> getAllByCity(String city) {
         return repository.findByCity(city);
+    }
+
+    public List<Point> getByCityAndPointName(String city, String pointName) {
+        return repository.searchByCityAndPointNameLike(pointName,city);
     }
 }
