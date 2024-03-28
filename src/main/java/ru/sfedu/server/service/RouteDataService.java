@@ -29,7 +29,11 @@ public class RouteDataService {
         return repository.findById(id);
     }
 
-    public List<Route> getByCity(String city){
+    public List<Route> getByCity(String city) {
         return repository.findByCity(city);
+    }
+
+    public List<Route> getByCityAndRouteNameLike(String routeName, String city) {
+        return repository.findByRouteNameAndCityLike(routeName, city);
     }
 }

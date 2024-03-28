@@ -34,6 +34,6 @@ public class PointDataService {
     }
 
     public List<Point> getByCityAndPointName(String city, String pointName) {
-        return repository.searchByCityAndPointNameLike(pointName,city);
+        return repository.findByCityAndPointNameLike(pointName,city);
     }
 }

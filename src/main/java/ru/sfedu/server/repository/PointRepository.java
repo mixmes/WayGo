@@ -14,5 +14,5 @@ public interface PointRepository extends JpaRepository<Point, Long> {
     List<Point> findByCity(String city);
 
     @Query("SELECT p FROM Point p WHERE p.pointName LIKE %:pointName% and p.city = :city")
-    List<Point> searchByCityAndPointNameLike(@Param("pointName") String pointName, @Param("city") String city);
+    List<Point> findByCityAndPointNameLike(@Param("pointName") String pointName, @Param("city") String city);
 }
