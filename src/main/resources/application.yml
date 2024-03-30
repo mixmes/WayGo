@@ -19,3 +19,6 @@ spring:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: create
+    show-sql: false
+buckets:
+  photo: photo-metainfo

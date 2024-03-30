@@ -1,5 +1,7 @@
 package ru.sfedu.server.rest;
 
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.S3Object;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -13,9 +15,12 @@ import org.springframework.web.multipart.MultipartFile;
 import ru.sfedu.server.dto.converters.PointCheckInConverter;
 import ru.sfedu.server.dto.converters.PointConverter;
 import ru.sfedu.server.dto.point.PointDTO;
+import ru.sfedu.server.model.metainfo.PhotoMetaInfo;
 import ru.sfedu.server.model.point.Point;
 import ru.sfedu.server.service.PointDataService;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -33,14 +38,22 @@ public class PointRestController {
     @Autowired
     private PointCheckInConverter pointCheckInConverter;
 
+    @Autowired
+    private AmazonS3 s3Client;
+
     @Operation(
             summary = "Получение точки",
             description = "Позволяет получить точку по id"
     )
     @GetMapping("/{id}")
-    public ResponseEntity<PointDTO> getPointById(@PathVariable @Parameter(description = "ID точки") Long id) {
+    public ResponseEntity<PointDTO> getPointById(@PathVariable @Parameter(description = "ID точки") Long id) throws IOException {
         Optional<Point> point = dataService.getById(id);
-        return point.map(value -> new ResponseEntity<>(pointConverter.convertToDto(value), HttpStatus.OK)).orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+        if (point.isPresent()) {
+            PointDTO dto = pointConverter.convertToDto(point.get());
+            dto.setPhotos(convertPhotosInfoToByteArrays(point.get().getPhotos()));
+            return new ResponseEntity<>(dto, HttpStatus.OK);
+        }
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
     @Operation(
@@ -60,8 +73,8 @@ public class PointRestController {
     @GetMapping("/")
     public ResponseEntity<List<PointDTO>> getByCityAndName(@RequestParam(name = "city") @Parameter(description = "Название города") String city,
                                                            @RequestParam(name = "pointName") @Parameter(description = "like название точки") String pointName) {
-        log.info(city+" "+ pointName);
-        List<PointDTO> points = dataService.getByCityAndPointName(city,pointName).stream().map(value -> pointConverter.convertToDto(value)).toList();
+        log.info(city + " " + pointName);
+        List<PointDTO> points = dataService.getByCityAndPointName(city, pointName).stream().map(value -> pointConverter.convertToDto(value)).toList();
         if (points.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
@@ -97,4 +110,25 @@ public class PointRestController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
+    private List<byte[]> convertPhotosInfoToByteArrays(List<PhotoMetaInfo> photos) throws IOException {
+        List<S3Object> objects = new ArrayList<>();
+        for (PhotoMetaInfo metaInfo : photos) {
+            objects.add(getS3Object(metaInfo.getBucketName(), metaInfo.getKey()));
+        }
+
+        List<byte[]> photoBytes = new ArrayList<>();
+        for (S3Object s3Object : objects) {
+            photoBytes.add(convertS3objectToByteArray(s3Object));
+        }
+
+        return photoBytes;
+    }
+
+    private byte[] convertS3objectToByteArray(S3Object s3Object) throws IOException {
+        return s3Object.getObjectContent().readAllBytes();
+    }
+
+    private S3Object getS3Object(String bucketName, String key) {
+        return s3Client.getObject(bucketName, key);
+    }
 }

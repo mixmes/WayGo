@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import ru.sfedu.server.model.text.TextMetaInfo;
 
+import java.util.List;
 import java.util.Set;
 
 @Data
@@ -18,5 +19,5 @@ public class PointDTO {
     private String description;
     private double longitude;
     private double latitude;
-    private TextMetaInfo metaInfo;
+    private List<byte[]> photos;
 }

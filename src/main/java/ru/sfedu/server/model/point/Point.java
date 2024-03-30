@@ -4,8 +4,9 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import ru.sfedu.server.model.text.TextMetaInfo;
+import ru.sfedu.server.model.metainfo.PhotoMetaInfo;
 
+import java.util.List;
 import java.util.Set;
 
 @Getter
@@ -35,11 +36,11 @@ public class Point {
     @Column(name = "latitude")
     private double latitude;
 
-    @OneToOne
-    private TextMetaInfo metaInfo;
-
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
     @JoinColumn(name = "id_point")
     private Set<PointCheckIn> checkIns;
+
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
+    private List<PhotoMetaInfo> photos;
 
 }

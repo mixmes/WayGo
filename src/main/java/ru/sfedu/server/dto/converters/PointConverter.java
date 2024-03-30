@@ -21,7 +21,7 @@ public class PointConverter implements Converter<Point, PointDTO> {
     @PostConstruct
     private void initTypeMaps(){
         TypeMap<Point,PointDTO> propertyMapper = modelMapper.createTypeMap(Point.class, PointDTO.class);
-        propertyMapper.addMappings(mapper -> mapper.map(Point::getMetaInfo, PointDTO::setMetaInfo));
+        propertyMapper.addMappings(mapper -> mapper.skip(PointDTO::setPhotos));
     }
     @Override
     public PointDTO convertToDto(Point entity) {
