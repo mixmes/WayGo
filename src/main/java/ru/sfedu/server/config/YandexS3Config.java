@@ -13,7 +13,6 @@ import org.springframework.context.annotation.Configuration;
 @Slf4j
 @Configuration
 public class YandexS3Config {
-    private static final String BUCKET_NAME = "photo-metainfo";
     private static final String BUCKET_ID = "YCAJE_0oNBqpGTSQOG0hCZPEy";
     private static final String BUCKET_KEY = "YCPhwRE6_oMeDW8IhgxTYTQWiHz5942F4Pi5H0WC";
 

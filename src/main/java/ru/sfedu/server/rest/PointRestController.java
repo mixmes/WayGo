@@ -11,7 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 import ru.sfedu.server.dto.converters.PointCheckInConverter;
 import ru.sfedu.server.dto.converters.PointConverter;
 import ru.sfedu.server.dto.point.PointDTO;
@@ -70,7 +69,7 @@ public class PointRestController {
     }
 
     @Operation(summary = "Получение списка точек", description = "Позволяет получить список точки по названию города и like названию точки")
-    @GetMapping("/")
+    @GetMapping
     public ResponseEntity<List<PointDTO>> getByCityAndName(@RequestParam(name = "city") @Parameter(description = "Название города") String city,
                                                            @RequestParam(name = "pointName") @Parameter(description = "like название точки") String pointName) {
         log.info(city + " " + pointName);
@@ -86,7 +85,8 @@ public class PointRestController {
             description = "Позволяет создать точку"
     )
     @PostMapping(consumes = "multipart/form-data")
-    public ResponseEntity<?> createPoint(@RequestParam @Parameter(description = "Точка") MultipartFile dto) {
+    public ResponseEntity<?> createPoint(@RequestParam @Parameter(description = "Точка") PointDTO dto) {
+        dataService.save(pointConverter.convertToEntity(dto));
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
@@ -110,17 +110,30 @@ public class PointRestController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
+    @PostMapping("/photo")
+    public ResponseEntity<?> addNewPhotosToPoint(@RequestBody @Parameter(description = "Описанаие точек") List<PhotoMetaInfo> photos,
+                                                 @RequestParam(name = "pointName") @Parameter(description = "Название точки") String pointName,
+                                                 @RequestParam(name = "city") @Parameter(description = "Город") String city) {
+        Point point = dataService.getByCityAndPointName(city, pointName).get(0);
+        photos.forEach(s -> point.getPhotos().add(s));
+
+        dataService.save(point);
+
+        return new ResponseEntity<>(HttpStatus.CREATED);
+    }
+
     private List<byte[]> convertPhotosInfoToByteArrays(List<PhotoMetaInfo> photos) throws IOException {
         List<S3Object> objects = new ArrayList<>();
-        for (PhotoMetaInfo metaInfo : photos) {
-            objects.add(getS3Object(metaInfo.getBucketName(), metaInfo.getKey()));
-        }
+        photos.forEach(s -> objects.add(getS3Object(s.getBucketName(), s.getKey())));
 
         List<byte[]> photoBytes = new ArrayList<>();
-        for (S3Object s3Object : objects) {
-            photoBytes.add(convertS3objectToByteArray(s3Object));
-        }
-
+        objects.forEach(s -> {
+            try {
+                photoBytes.add(convertS3objectToByteArray(s));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
         return photoBytes;
     }
 
