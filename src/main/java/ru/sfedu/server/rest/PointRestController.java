@@ -61,11 +61,23 @@ public class PointRestController {
     )
     @GetMapping("/all")
     public ResponseEntity<List<PointDTO>> getAllByCity(@RequestParam @Parameter(description = "Название города") String city) {
-        List<PointDTO> points = dataService.getAllByCity(city).stream().map(value -> pointConverter.convertToDto(value)).toList();
+        log.info("Get point by city={}", city);
+        List<Point> points = dataService.getAllByCity(city);
         if (points.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
-        return new ResponseEntity<>(points, HttpStatus.OK);
+        List<PointDTO> pointsDtos = new ArrayList<>();
+        points.forEach(s -> {
+            PointDTO dto = pointConverter.convertToDto(s);
+            try {
+                dto.setPhotos(convertPhotosInfoToByteArrays(s.getPhotos()));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            pointsDtos.add(dto);
+        });
+
+        return new ResponseEntity<>(pointsDtos, HttpStatus.OK);
     }
 
     @Operation(summary = "Получение списка точек", description = "Позволяет получить список точки по названию города и like названию точки")
