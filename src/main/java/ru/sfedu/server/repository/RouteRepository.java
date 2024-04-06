@@ -14,4 +14,6 @@ public interface RouteRepository extends JpaRepository<Route, Long> {
 
     @Query("SELECT r FROM Route r WHERE r.routeName LIKE %:routeName% and r.city = :city")
     List<Route> findByRouteNameAndCityLike(@Param("routeName") String routeName, @Param("city") String city);
+
+    List<Route> findByStopsOnRoute_id(Long id);
 }

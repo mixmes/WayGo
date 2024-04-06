@@ -1,11 +1,14 @@
 package ru.sfedu.server.model.point;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import ru.sfedu.server.model.metainfo.PhotoMetaInfo;
+import ru.sfedu.server.model.route.Route;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -42,5 +45,14 @@ public class Point {
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
     private List<PhotoMetaInfo> photos;
+
+
+    @ManyToMany(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "route_point",
+            joinColumns = @JoinColumn(name = "id_point"),
+            inverseJoinColumns = @JoinColumn(name = "id_route")
+    )
+    private List<Route> routes = new ArrayList<>();
 
 }

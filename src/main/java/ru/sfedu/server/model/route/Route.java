@@ -40,6 +40,11 @@ public class Route implements Serializable {
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private Set<RouteCheckIn> routeCheckIns = new HashSet<>();
 
-    @OneToMany(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
+    @ManyToMany(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "route_point",
+            joinColumns = @JoinColumn(name = "id_route"),
+            inverseJoinColumns = @JoinColumn(name = "id_point")
+    )
     private List<Point> stopsOnRoute = new ArrayList<>();
 }

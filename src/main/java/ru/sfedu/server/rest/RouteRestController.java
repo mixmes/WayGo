@@ -54,6 +54,14 @@ public class RouteRestController {
         return new ResponseEntity<>(dto, HttpStatus.OK);
     }
 
+    @GetMapping("/point")
+    public List<Long> getIdsByPointId(@RequestParam(name = "pointId") Long pointId) {
+        List<Long> ids = new ArrayList<>();
+        routeDataService.getByPointId(pointId).stream().forEach(s -> ids.add(s.getId()));
+
+        return ids;
+    }
+
     @Operation(summary = "Получение списка маршрута", description = "Позволяет получить список маршрутов по названию города")
     @GetMapping("/all")
     public ResponseEntity<List<RouteDTO>> getAllByCity(@RequestParam @Parameter(description = "Название города") String city) throws IOException {
@@ -62,7 +70,7 @@ public class RouteRestController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
         List<RouteDTO> routeDtos = routes.stream().map(value -> converter.convertToDto(value)).toList();
-        for(int i = 0; i<routeDtos.size(); i++){
+        for (int i = 0; i < routeDtos.size(); i++) {
             Route route = routes.get(i);
             RouteDTO dto = routeDtos.get(i);
             for (int j = 0; i < dto.getStopsOnRoute().size(); i++) {

@@ -29,6 +29,10 @@ public class RouteDataService {
         return repository.findById(id);
     }
 
+    public List<Route> getByPointId(Long id){
+        return repository.findByStopsOnRoute_id(id);
+    }
+
     public List<Route> getByCity(String city) {
         return repository.findByCity(city);
     }

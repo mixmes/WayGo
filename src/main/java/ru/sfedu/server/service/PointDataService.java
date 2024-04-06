@@ -36,4 +36,8 @@ public class PointDataService {
     public List<Point> getByCityAndPointName(String city, String pointName) {
         return repository.findByCityAndPointNameLike(pointName,city);
     }
+
+    public List<Point> getByRouteId(Long id){
+        return repository.findByRoutes_id(id);
+    }
 }

@@ -55,6 +55,14 @@ public class PointRestController {
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
+    @GetMapping("/route")
+    public List<Long> getIdsByRouteId(@RequestParam(name = "routeId") Long routeId){
+        List<Long> ids = new ArrayList<>();
+        dataService.getByRouteId(routeId).stream().forEach(s->ids.add(s.getId()));
+
+        return ids;
+    }
+
     @Operation(
             summary = "Получение списка точек",
             description = "Позволяет получить список точек по названию города"
