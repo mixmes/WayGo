@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import ru.sfedu.server.dto.point.PointDTO;
 
+import java.util.List;
 import java.util.Set;
 
 @Data
@@ -17,5 +18,5 @@ public class RouteDTO {
     private String description;
     private String routeName;
     private Set<RouteGradeDTO> routeGrades;
-    private Set<PointDTO> stopsOnRoute;
+    private List<PointDTO> stopsOnRoute;
 }

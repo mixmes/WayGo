@@ -6,7 +6,9 @@ import lombok.Setter;
 import ru.sfedu.server.model.point.Point;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Getter
@@ -31,13 +33,13 @@ public class Route implements Serializable {
     private String description;
 
     @JoinColumn(name = "id_route")
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @OneToMany(cascade = CascadeType.PERSIST, orphanRemoval = false, fetch = FetchType.EAGER)
     private Set<RouteGrade> routeGrades = new HashSet<>();
 
     @JoinColumn(name = "id_route")
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @OneToMany(cascade = CascadeType.PERSIST, orphanRemoval = false, fetch = FetchType.EAGER)
     private Set<RouteCheckIn> routeCheckIns = new HashSet<>();
 
     @OneToMany(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
-    private Set<Point> stopsOnRoute = new HashSet<>();
+    private List<Point> stopsOnRoute = new ArrayList<>();
 }
