@@ -33,11 +33,11 @@ public class Route implements Serializable {
     private String description;
 
     @JoinColumn(name = "id_route")
-    @OneToMany(cascade = CascadeType.PERSIST, orphanRemoval = false, fetch = FetchType.EAGER)
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private Set<RouteGrade> routeGrades = new HashSet<>();
 
     @JoinColumn(name = "id_route")
-    @OneToMany(cascade = CascadeType.PERSIST, orphanRemoval = false, fetch = FetchType.EAGER)
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private Set<RouteCheckIn> routeCheckIns = new HashSet<>();
 
     @OneToMany(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
