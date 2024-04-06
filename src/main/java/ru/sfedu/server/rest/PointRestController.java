@@ -49,7 +49,7 @@ public class PointRestController {
         Optional<Point> point = dataService.getById(id);
         if (point.isPresent()) {
             PointDTO dto = pointConverter.convertToDto(point.get());
-            dto.setPhotos(convertPhotosInfoToByteArrays(point.get().getPhotos()));
+            dto.setPhoto(convertPhotoInfoToByte(point.get().getPhoto()));
             return new ResponseEntity<>(dto, HttpStatus.OK);
         }
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -78,7 +78,7 @@ public class PointRestController {
         points.forEach(s -> {
             PointDTO dto = pointConverter.convertToDto(s);
             try {
-                dto.setPhotos(convertPhotosInfoToByteArrays(s.getPhotos()));
+                dto.setPhoto(convertPhotoInfoToByte(s.getPhoto()));
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -130,30 +130,11 @@ public class PointRestController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @PostMapping("/photo")
-    public ResponseEntity<?> addNewPhotosToPoint(@RequestBody @Parameter(description = "Описанаие точек") List<PhotoMetaInfo> photos,
-                                                 @RequestParam(name = "pointName") @Parameter(description = "Название точки") String pointName,
-                                                 @RequestParam(name = "city") @Parameter(description = "Город") String city) {
-        Point point = dataService.getByCityAndPointName(city, pointName).get(0);
-        photos.forEach(s -> point.getPhotos().add(s));
 
-        dataService.save(point);
+    private byte[] convertPhotoInfoToByte(PhotoMetaInfo photo) throws IOException {
+        S3Object s3Object = getS3Object(photo.getBucketName(), photo.getKey());
+        byte[] photoBytes = convertS3objectToByteArray(s3Object);
 
-        return new ResponseEntity<>(HttpStatus.CREATED);
-    }
-
-    private List<byte[]> convertPhotosInfoToByteArrays(List<PhotoMetaInfo> photos) throws IOException {
-        List<S3Object> objects = new ArrayList<>();
-        photos.forEach(s -> objects.add(getS3Object(s.getBucketName(), s.getKey())));
-
-        List<byte[]> photoBytes = new ArrayList<>();
-        objects.forEach(s -> {
-            try {
-                photoBytes.add(convertS3objectToByteArray(s));
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        });
         return photoBytes;
     }
 

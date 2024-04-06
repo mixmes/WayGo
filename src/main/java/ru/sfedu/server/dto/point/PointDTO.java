@@ -19,5 +19,5 @@ public class PointDTO {
     private String description;
     private double longitude;
     private double latitude;
-    private List<byte[]> photos;
+    private byte[] photo;
 }

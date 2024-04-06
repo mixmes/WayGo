@@ -43,8 +43,8 @@ public class Point {
     @JoinColumn(name = "id_point")
     private Set<PointCheckIn> checkIns;
 
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
-    private List<PhotoMetaInfo> photos;
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
+    private PhotoMetaInfo photo;
 
 
     @ManyToMany(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)

@@ -49,7 +49,7 @@ public class RouteRestController {
         }
         RouteDTO dto = converter.convertToDto(route.get());
         for (int i = 0; i < dto.getStopsOnRoute().size(); i++) {
-            dto.getStopsOnRoute().get(i).setPhotos(convertPhotosInfoToByteArrays(route.get().getStopsOnRoute().get(i).getPhotos()));
+            dto.getStopsOnRoute().get(i).setPhoto(convertPhotoInfoToByte(route.get().getStopsOnRoute().get(i).getPhoto()));
         }
         return new ResponseEntity<>(dto, HttpStatus.OK);
     }
@@ -70,11 +70,12 @@ public class RouteRestController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
         List<RouteDTO> routeDtos = routes.stream().map(value -> converter.convertToDto(value)).toList();
+
         for (int i = 0; i < routeDtos.size(); i++) {
             Route route = routes.get(i);
             RouteDTO dto = routeDtos.get(i);
             for (int j = 0; i < dto.getStopsOnRoute().size(); i++) {
-                dto.getStopsOnRoute().get(i).setPhotos(convertPhotosInfoToByteArrays(route.getStopsOnRoute().get(i).getPhotos()));
+                dto.getStopsOnRoute().get(i).setPhoto(convertPhotoInfoToByte(route.getStopsOnRoute().get(i).getPhoto()));
             }
         }
 
@@ -114,18 +115,10 @@ public class RouteRestController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    private List<byte[]> convertPhotosInfoToByteArrays(List<PhotoMetaInfo> photos) throws IOException {
-        List<S3Object> objects = new ArrayList<>();
-        photos.forEach(s -> objects.add(getS3Object(s.getBucketName(), s.getKey())));
+    private byte[] convertPhotoInfoToByte(PhotoMetaInfo photo) throws IOException {
+        S3Object s3Object = getS3Object(photo.getBucketName(), photo.getKey());
+        byte[] photoBytes = convertS3objectToByteArray(s3Object);
 
-        List<byte[]> photoBytes = new ArrayList<>();
-        objects.forEach(s -> {
-            try {
-                photoBytes.add(convertS3objectToByteArray(s));
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        });
         return photoBytes;
     }
 
