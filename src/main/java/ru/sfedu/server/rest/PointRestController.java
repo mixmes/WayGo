@@ -13,8 +13,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.sfedu.server.dto.converters.PointCheckInConverter;
 import ru.sfedu.server.dto.converters.PointConverter;
+import ru.sfedu.server.dto.metadata.ArMetadataDTO;
 import ru.sfedu.server.dto.point.PointDTO;
-import ru.sfedu.server.model.metainfo.PhotoMetaInfo;
+import ru.sfedu.server.model.metainfo.MetaInfo;
 import ru.sfedu.server.model.point.Point;
 import ru.sfedu.server.service.PointDataService;
 
@@ -48,17 +49,26 @@ public class PointRestController {
     public ResponseEntity<PointDTO> getPointById(@PathVariable @Parameter(description = "ID точки") Long id) throws IOException {
         Optional<Point> point = dataService.getById(id);
         if (point.isPresent()) {
-            PointDTO dto = pointConverter.convertToDto(point.get());
-            dto.setPhoto(convertPhotoInfoToByte(point.get().getPhoto()));
+            Point pointEntity = point.get();
+            PointDTO dto = pointConverter.convertToDto(pointEntity);
+            dto.setPhoto(convertMetaInfoToByte(pointEntity.getPhoto()));
+
+            ArMetadataDTO ar = new ArMetadataDTO();
+            ar.setArFile(convertMetaInfoToByte(pointEntity.getArFileMeta()));
+            if (pointEntity.getArFileMeta() != null) {
+                ar.setScale(pointEntity.getArFileMeta().getScale());
+            }
+            dto.setArMetadataDTO(ar);
+
             return new ResponseEntity<>(dto, HttpStatus.OK);
         }
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
     @GetMapping("/route")
-    public List<Long> getIdsByRouteId(@RequestParam(name = "routeId") Long routeId){
+    public List<Long> getIdsByRouteId(@RequestParam(name = "routeId") Long routeId) {
         List<Long> ids = new ArrayList<>();
-        dataService.getByRouteId(routeId).stream().forEach(s->ids.add(s.getId()));
+        dataService.getByRouteId(routeId).forEach(s -> ids.add(s.getId()));
 
         return ids;
     }
@@ -78,7 +88,14 @@ public class PointRestController {
         points.forEach(s -> {
             PointDTO dto = pointConverter.convertToDto(s);
             try {
-                dto.setPhoto(convertPhotoInfoToByte(s.getPhoto()));
+                dto.setPhoto(convertMetaInfoToByte(s.getPhoto()));
+
+                ArMetadataDTO ar = new ArMetadataDTO();
+                ar.setArFile(convertMetaInfoToByte(s.getArFileMeta()));
+                if (s.getArFileMeta() != null) {
+                    ar.setScale(s.getArFileMeta().getScale());
+                }
+                dto.setArMetadataDTO(ar);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -131,11 +148,13 @@ public class PointRestController {
     }
 
 
-    private byte[] convertPhotoInfoToByte(PhotoMetaInfo photo) throws IOException {
-        S3Object s3Object = getS3Object(photo.getBucketName(), photo.getKey());
-        byte[] photoBytes = convertS3objectToByteArray(s3Object);
+    private byte[] convertMetaInfoToByte(MetaInfo metaInfo) throws IOException {
+        if (metaInfo == null) {
+            return null;
+        }
+        S3Object s3Object = getS3Object(metaInfo.getBucketName(), metaInfo.getKey());
 
-        return photoBytes;
+        return convertS3objectToByteArray(s3Object);
     }
 
     private byte[] convertS3objectToByteArray(S3Object s3Object) throws IOException {

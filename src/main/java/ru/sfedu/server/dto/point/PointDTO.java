@@ -3,10 +3,7 @@ package ru.sfedu.server.dto.point;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import ru.sfedu.server.model.text.TextMetaInfo;
-
-import java.util.List;
-import java.util.Set;
+import ru.sfedu.server.dto.metadata.ArMetadataDTO;
 
 @Data
 @AllArgsConstructor
@@ -20,4 +17,5 @@ public class PointDTO {
     private double longitude;
     private double latitude;
     private byte[] photo;
+    private ArMetadataDTO arMetadataDTO;
 }

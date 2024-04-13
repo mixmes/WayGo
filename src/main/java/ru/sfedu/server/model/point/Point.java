@@ -1,10 +1,10 @@
 package ru.sfedu.server.model.point;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import ru.sfedu.server.model.metainfo.ArMetaInfo;
 import ru.sfedu.server.model.metainfo.PhotoMetaInfo;
 import ru.sfedu.server.model.route.Route;
 
@@ -45,6 +45,9 @@ public class Point {
 
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
     private PhotoMetaInfo photo;
+
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
+    private ArMetaInfo arFileMeta;
 
 
     @ManyToMany(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
