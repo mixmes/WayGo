@@ -17,7 +17,6 @@ public class PointConverter implements Converter<Point, PointDTO> {
     private void initTypeMaps() {
         TypeMap<Point, PointDTO> propertyMapper = modelMapper.createTypeMap(Point.class, PointDTO.class);
         propertyMapper.addMappings(mapper -> mapper.skip(PointDTO::setPhoto));
-        propertyMapper.addMappings(mapper -> mapper.skip(PointDTO::setArMetadataDTO));
     }
 
     @Override
