@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import ru.sfedu.server.model.metainfo.ArMetaInfo;
+import ru.sfedu.server.model.metainfo.AudioMetaInfo;
 import ru.sfedu.server.model.metainfo.PhotoMetaInfo;
 import ru.sfedu.server.model.route.Route;
 
@@ -49,6 +50,9 @@ public class Point {
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
     private ArMetaInfo arFileMeta;
 
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER,orphanRemoval = true)
+    private AudioMetaInfo audioMetaInfo;
+
 
     @ManyToMany(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
     @JoinTable(
@@ -57,5 +61,6 @@ public class Point {
             inverseJoinColumns = @JoinColumn(name = "id_route")
     )
     private List<Route> routes = new ArrayList<>();
+
 
 }

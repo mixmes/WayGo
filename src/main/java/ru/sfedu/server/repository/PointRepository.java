@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import ru.sfedu.server.model.metainfo.ArMetaInfo;
+import ru.sfedu.server.model.metainfo.AudioMetaInfo;
 import ru.sfedu.server.model.point.Point;
 
 import java.util.List;
@@ -22,5 +23,9 @@ public interface PointRepository extends JpaRepository<Point, Long> {
 
     @Query("SELECT p.arFileMeta FROM Point p where p.id = :id")
     Optional<ArMetaInfo> findArMetaInfoByPointId(@Param("id") Long id);
+
+
+    @Query("SELECT p.audioMetaInfo FROM Point p where p.id = :id")
+    Optional<AudioMetaInfo> findAudioMetaInfoByPointId(@Param("id") Long id);
 
 }

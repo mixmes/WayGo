@@ -17,6 +17,7 @@ import ru.sfedu.server.dto.converters.PointConverter;
 import ru.sfedu.server.dto.metadata.ArMetaInfoDTO;
 import ru.sfedu.server.dto.point.PointDTO;
 import ru.sfedu.server.model.metainfo.ArMetaInfo;
+import ru.sfedu.server.model.metainfo.AudioMetaInfo;
 import ru.sfedu.server.model.metainfo.MetaInfo;
 import ru.sfedu.server.model.point.Point;
 import ru.sfedu.server.service.PointDataService;
@@ -78,6 +79,17 @@ public class PointRestController {
             return (ResponseEntity<ArMetaInfoDTO>) ResponseEntity.notFound();
         }
         return new ResponseEntity<>(arMetaInfoConverter.convertToDto(ar.get()),HttpStatus.OK);
+    }
+
+    @GetMapping("/audio")
+    public ResponseEntity<byte[]> getAudioMetaInfo(@RequestParam(name = "pointId") Long pointId) throws IOException {
+        Optional<AudioMetaInfo> audio = dataService.getAudioMetaInfoByPointId(pointId);
+
+        if(audio.isEmpty()){
+            return (ResponseEntity<byte[]>) ResponseEntity.notFound();
+        }
+
+        return new ResponseEntity<>(convertMetaInfoToByte(audio.get()),HttpStatus.OK);
     }
 
     @Operation(

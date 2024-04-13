@@ -3,6 +3,7 @@ package ru.sfedu.server.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.sfedu.server.model.metainfo.ArMetaInfo;
+import ru.sfedu.server.model.metainfo.AudioMetaInfo;
 import ru.sfedu.server.model.point.Point;
 import ru.sfedu.server.repository.PointRepository;
 
@@ -45,4 +46,9 @@ public class PointDataService {
     public Optional<ArMetaInfo> getArMetaInfoByPointId(Long id){
         return repository.findArMetaInfoByPointId(id);
     }
+
+    public Optional<AudioMetaInfo> getAudioMetaInfoByPointId(Long id){
+        return repository.findAudioMetaInfoByPointId(id);
+    }
+
 }
