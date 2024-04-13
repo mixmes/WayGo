@@ -2,6 +2,7 @@ package ru.sfedu.server.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import ru.sfedu.server.model.metainfo.ArMetaInfo;
 import ru.sfedu.server.model.point.Point;
 import ru.sfedu.server.repository.PointRepository;
 
@@ -39,5 +40,9 @@ public class PointDataService {
 
     public List<Point> getByRouteId(Long id){
         return repository.findByRoutes_id(id);
+    }
+
+    public Optional<ArMetaInfo> getArMetaInfoByPointId(Long id){
+        return repository.findArMetaInfoByPointId(id);
     }
 }

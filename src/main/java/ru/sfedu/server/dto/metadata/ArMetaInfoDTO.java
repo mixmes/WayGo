@@ -5,7 +5,8 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class ArMetadataDTO {
-    private byte[] arFile;
+public class ArMetaInfoDTO {
+    private String key;
+    private String bucketName;
     private int scale;
 }

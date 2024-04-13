@@ -11,10 +11,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ru.sfedu.server.dto.converters.ArMetaInfoConverter;
 import ru.sfedu.server.dto.converters.PointCheckInConverter;
 import ru.sfedu.server.dto.converters.PointConverter;
-import ru.sfedu.server.dto.metadata.ArMetadataDTO;
+import ru.sfedu.server.dto.metadata.ArMetaInfoDTO;
 import ru.sfedu.server.dto.point.PointDTO;
+import ru.sfedu.server.model.metainfo.ArMetaInfo;
 import ru.sfedu.server.model.metainfo.MetaInfo;
 import ru.sfedu.server.model.point.Point;
 import ru.sfedu.server.service.PointDataService;
@@ -39,6 +41,9 @@ public class PointRestController {
     private PointCheckInConverter pointCheckInConverter;
 
     @Autowired
+    ArMetaInfoConverter arMetaInfoConverter;
+
+    @Autowired
     private AmazonS3 s3Client;
 
     @Operation(
@@ -53,13 +58,6 @@ public class PointRestController {
             PointDTO dto = pointConverter.convertToDto(pointEntity);
             dto.setPhoto(convertMetaInfoToByte(pointEntity.getPhoto()));
 
-            ArMetadataDTO ar = new ArMetadataDTO();
-            ar.setArFile(convertMetaInfoToByte(pointEntity.getArFileMeta()));
-            if (pointEntity.getArFileMeta() != null) {
-                ar.setScale(pointEntity.getArFileMeta().getScale());
-            }
-            dto.setArMetadataDTO(ar);
-
             return new ResponseEntity<>(dto, HttpStatus.OK);
         }
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -71,6 +69,15 @@ public class PointRestController {
         dataService.getByRouteId(routeId).forEach(s -> ids.add(s.getId()));
 
         return ids;
+    }
+
+    @GetMapping("/ar")
+    public ResponseEntity<ArMetaInfoDTO> getArMetaInfo(@RequestParam(name = "pointId") Long pointId){
+        Optional<ArMetaInfo> ar = dataService.getArMetaInfoByPointId(pointId);
+        if(ar.isEmpty()){
+            return (ResponseEntity<ArMetaInfoDTO>) ResponseEntity.notFound();
+        }
+        return new ResponseEntity<>(arMetaInfoConverter.convertToDto(ar.get()),HttpStatus.OK);
     }
 
     @Operation(
@@ -89,13 +96,6 @@ public class PointRestController {
             PointDTO dto = pointConverter.convertToDto(s);
             try {
                 dto.setPhoto(convertMetaInfoToByte(s.getPhoto()));
-
-                ArMetadataDTO ar = new ArMetadataDTO();
-                ar.setArFile(convertMetaInfoToByte(s.getArFileMeta()));
-                if (s.getArFileMeta() != null) {
-                    ar.setScale(s.getArFileMeta().getScale());
-                }
-                dto.setArMetadataDTO(ar);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
