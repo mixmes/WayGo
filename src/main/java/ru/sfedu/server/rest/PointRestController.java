@@ -78,7 +78,7 @@ public class PointRestController {
         return ar.map(arMetaInfo -> new ResponseEntity<>(arMetaInfoConverter.convertToDto(arMetaInfo), HttpStatus.OK)).orElseGet(() -> (ResponseEntity<ArMetaInfoDTO>) ResponseEntity.notFound());
     }
 
-    @GetMapping("/audio")
+    @GetMapping(value = "/audio" , produces = "audio/mpeg")
     public ResponseEntity<byte[]> getAudioMetaInfo(@RequestParam(name = "pointId") Long pointId) throws IOException {
         Optional<AudioMetaInfo> audio = dataService.getAudioMetaInfoByPointId(pointId);
 
