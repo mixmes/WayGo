@@ -86,4 +86,12 @@ public class User {
         favouritePoints.add(point);
     }
 
+    public void deleteFavouritePoint(Point point){
+        favouritePoints.remove(point);
+    }
+
+    public void deleteFavouriteRoute(Route route){
+        favouriteRoutes.remove(route);
+    }
+
 }

@@ -194,6 +194,50 @@ public class UserRestController {
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
+    @Operation(summary = "Удаление точки из избранного", description = "Позволяет пользователю удалить точку из избранного")
+    @DeleteMapping(value = "/points/favourite")
+    public ResponseEntity<?> deleteFavouritePoint(@RequestParam @Parameter(description = "ID пользователя") Long userId,
+                                                  @RequestParam @Parameter(description = "ID точки") Long pointId) {
+        log.info("Delete favourite point id={}", pointId);
+        Optional<User> user = userDataService.getById(userId);
+        if (user.isEmpty()) {
+            log.error("There is no user with such id={}", userId);
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        Optional<Point> point = pointDataService.getById(pointId);
+        if (point.isEmpty()) {
+            log.error("There is no point with such id={}", pointId);
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        user.get().deleteFavouritePoint(point.get());
+        userDataService.save(user.get());
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @Operation(summary = "Удаление точки из избранного", description = "Позволяет пользователю удалить точку из избранного")
+    @DeleteMapping(value = "/routes/favourite")
+    public ResponseEntity<?> deleteFavouriteRoute(@RequestParam @Parameter(description = "ID пользователя") Long userId,
+                                                  @RequestParam @Parameter(description = "ID маршрута") Long routeId) {
+        log.info("Add favourite point id={}", routeId);
+        Optional<User> user = userDataService.getById(userId);
+        if (user.isEmpty()) {
+            log.error("There is no user with such id={}", userId);
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        Optional<Route> route = routeDataService.getById(routeId);
+        if (route.isEmpty()) {
+            log.error("There is no point with such id={}", routeId);
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        user.get().deleteFavouriteRoute(route.get());
+        userDataService.save(user.get());
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
     @Operation(summary = "Получвение точек из списка избранного")
     @GetMapping(value = "/points/favourite")
     public ResponseEntity<Set<PointDTO>> getFavouritePoints(@RequestParam @Parameter(name = "ID пользователя") Long userId) {
