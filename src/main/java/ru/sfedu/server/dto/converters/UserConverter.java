@@ -32,6 +32,6 @@ public class UserConverter implements Converter<User, UserDTO>{
 
     @Override
     public User convertToEntity(UserDTO dto) {
-        return null;
+        return mapper.map(dto, User.class);
     }
 }
