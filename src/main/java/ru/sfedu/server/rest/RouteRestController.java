@@ -54,7 +54,7 @@ public class RouteRestController {
     }
 
     @GetMapping("/point")
-    public ResponseEntity<List<RouteDTO>> getIdsByPointId(@RequestParam(name = "pointId") Long pointId) {
+    public ResponseEntity<List<RouteDTO>> getRoutesByPointId(@RequestParam(name = "pointId") Long pointId) {
         List<RouteDTO> routes = routeDataService.getByPointId(pointId).stream().map(s -> converter.convertToDto(s)).toList();
         if(routes.isEmpty()){
             return (ResponseEntity<List<RouteDTO>>) ResponseEntity.notFound();
