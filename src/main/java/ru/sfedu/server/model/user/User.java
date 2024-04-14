@@ -9,7 +9,9 @@ import ru.sfedu.server.model.route.Route;
 import ru.sfedu.server.model.route.RouteCheckIn;
 import ru.sfedu.server.model.route.RouteGrade;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Getter
@@ -55,10 +57,10 @@ public class User {
 //    private Subscription subscription;
 
     @OneToMany(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
-    private Set<Route> favouriteRoutes = new HashSet<>();
+    private List<Route> favouriteRoutes = new ArrayList<>();
 
     @OneToMany(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
-    private Set<Point> favouritePoints = new HashSet<>();
+    private List<Point> favouritePoints = new ArrayList<>();
 
     public void addRouteGrade(RouteGrade routeGrade) {
         routeGrades.add(routeGrade);

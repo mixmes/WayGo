@@ -24,6 +24,7 @@ import ru.sfedu.server.service.PointDataService;
 import ru.sfedu.server.service.RouteDataService;
 import ru.sfedu.server.service.UserDataService;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -203,8 +204,8 @@ public class UserRestController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
         Set<PointDTO> response = (user.get().getFavouritePoints().stream().map(s -> pointConverter.convertToDto(s)).collect(Collectors.toSet()));
-        return new ResponseEntity<>(response,HttpStatus.OK)
-        ;
+        return new ResponseEntity<>(response, HttpStatus.OK)
+                ;
     }
 
     @Operation(summary = "Добавление маршрута в избранное", description = "Позволяет пользователю добавить маршрут в избранное")
@@ -239,7 +240,27 @@ public class UserRestController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
         Set<RouteDTO> response = (user.get().getFavouriteRoutes().stream().map(s -> routeConverter.convertToDto(s)).collect(Collectors.toSet()));
-        return new ResponseEntity<>(response,HttpStatus.OK);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @GetMapping(value = "/points/favourite/ids")
+    public ResponseEntity<List<Long>> getFavouritePointsIds(@RequestParam(name = "userId") Long id) {
+        List<Long> ids = userDataService.getFavouritePointsIds(id);
+        if (ids.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        return new ResponseEntity<>(ids, HttpStatus.OK);
+    }
+
+    @GetMapping(value = "/routes/favourite/ids")
+    public ResponseEntity<List<Long>> getFavouriteRoutesIds(@RequestParam(name = "userId") Long id) {
+        List<Long> ids = userDataService.getFavouriteRoutesIds(id);
+        if (ids.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        return new ResponseEntity<>(ids, HttpStatus.OK);
     }
 
     @Operation(summary = "Создание пользователя")
@@ -257,13 +278,13 @@ public class UserRestController {
     }
 
     @GetMapping
-    public ResponseEntity<UserDTO> getUserByUUID(@RequestParam String uuid){
+    public ResponseEntity<UserDTO> getUserByUUID(@RequestParam String uuid) {
         log.info("Get user by uid");
         Optional<User> user = userDataService.getByUid(uuid);
-        if(user.isEmpty()){
-            log.error("There is no user with such uuid={}",uuid);
+        if (user.isEmpty()) {
+            log.error("There is no user with such uuid={}", uuid);
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
-        return new ResponseEntity<>(userConverter.convertToDto(user.get()),HttpStatus.OK);
+        return new ResponseEntity<>(userConverter.convertToDto(user.get()), HttpStatus.OK);
     }
 }
