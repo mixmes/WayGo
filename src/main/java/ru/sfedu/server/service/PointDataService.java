@@ -36,19 +36,18 @@ public class PointDataService {
     }
 
     public List<Point> getByCityAndPointName(String city, String pointName) {
-        return repository.findByCityAndPointNameLike(pointName,city);
+        return repository.findByCityAndPointNameLike(pointName, city);
     }
 
-    public List<Point> getByRouteId(Long id){
+    public List<Point> getByRouteId(Long id) {
         return repository.findByRoutes_id(id);
     }
 
-    public Optional<ArMetaInfo> getArMetaInfoByPointId(Long id){
+    public Optional<ArMetaInfo> getArMetaInfoByPointId(Long id) {
         return repository.findArMetaInfoByPointId(id);
     }
 
-    public Optional<AudioMetaInfo> getAudioMetaInfoByPointId(Long id){
+    public Optional<AudioMetaInfo> getAudioMetaInfoByPointId(Long id) {
         return repository.findAudioMetaInfoByPointId(id);
     }
-
 }

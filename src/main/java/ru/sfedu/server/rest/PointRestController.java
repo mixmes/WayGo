@@ -73,23 +73,20 @@ public class PointRestController {
     }
 
     @GetMapping("/ar")
-    public ResponseEntity<ArMetaInfoDTO> getArMetaInfo(@RequestParam(name = "pointId") Long pointId){
+    public ResponseEntity<ArMetaInfoDTO> getArMetaInfo(@RequestParam(name = "pointId") Long pointId) {
         Optional<ArMetaInfo> ar = dataService.getArMetaInfoByPointId(pointId);
-        if(ar.isEmpty()){
-            return (ResponseEntity<ArMetaInfoDTO>) ResponseEntity.notFound();
-        }
-        return new ResponseEntity<>(arMetaInfoConverter.convertToDto(ar.get()),HttpStatus.OK);
+        return ar.map(arMetaInfo -> new ResponseEntity<>(arMetaInfoConverter.convertToDto(arMetaInfo), HttpStatus.OK)).orElseGet(() -> (ResponseEntity<ArMetaInfoDTO>) ResponseEntity.notFound());
     }
 
     @GetMapping("/audio")
     public ResponseEntity<byte[]> getAudioMetaInfo(@RequestParam(name = "pointId") Long pointId) throws IOException {
         Optional<AudioMetaInfo> audio = dataService.getAudioMetaInfoByPointId(pointId);
 
-        if(audio.isEmpty()){
+        if (audio.isEmpty()) {
             return (ResponseEntity<byte[]>) ResponseEntity.notFound();
         }
 
-        return new ResponseEntity<>(convertMetaInfoToByte(audio.get()),HttpStatus.OK);
+        return new ResponseEntity<>(convertMetaInfoToByte(audio.get()), HttpStatus.OK);
     }
 
     @Operation(
@@ -129,11 +126,32 @@ public class PointRestController {
         return new ResponseEntity<>(points, HttpStatus.OK);
     }
 
+    @GetMapping("/coordinates")
+    public ResponseEntity<List<PointDTO>> getCoordinatesByCityName(@RequestParam(name = "city") String city) {
+        List<Point> points = dataService.getAllByCity(city);
+
+        if (points.isEmpty()) {
+            return (ResponseEntity<List<PointDTO>>) ResponseEntity.notFound();
+        }
+
+
+        List<PointDTO> coords = points.stream().map(s -> {
+            PointDTO pointDTO = new PointDTO();
+            pointDTO.setLongitude(s.getLongitude());
+            pointDTO.setLatitude(s.getLatitude());
+
+            return pointDTO;
+        }).toList();
+
+        return new ResponseEntity<>(coords, HttpStatus.OK);
+    }
+
     @Operation(
             summary = "Создание точки",
             description = "Позволяет создать точку"
     )
     @PostMapping(consumes = "multipart/form-data")
+
     public ResponseEntity<?> createPoint(@RequestParam @Parameter(description = "Точка") PointDTO dto) {
         dataService.save(pointConverter.convertToEntity(dto));
         return new ResponseEntity<>(HttpStatus.CREATED);
