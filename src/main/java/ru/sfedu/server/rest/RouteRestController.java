@@ -19,7 +19,6 @@ import ru.sfedu.server.service.PointDataService;
 import ru.sfedu.server.service.RouteDataService;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -55,11 +54,12 @@ public class RouteRestController {
     }
 
     @GetMapping("/point")
-    public List<Long> getIdsByPointId(@RequestParam(name = "pointId") Long pointId) {
-        List<Long> ids = new ArrayList<>();
-        routeDataService.getByPointId(pointId).stream().forEach(s -> ids.add(s.getId()));
-
-        return ids;
+    public ResponseEntity<List<RouteDTO>> getIdsByPointId(@RequestParam(name = "pointId") Long pointId) {
+        List<RouteDTO> routes = routeDataService.getByPointId(pointId).stream().map(s -> converter.convertToDto(s)).toList();
+        if(routes.isEmpty()){
+            return (ResponseEntity<List<RouteDTO>>) ResponseEntity.notFound();
+        }
+        return ResponseEntity.ok(routes);
     }
 
     @Operation(summary = "Получение списка маршрута", description = "Позволяет получить список маршрутов по названию города")
