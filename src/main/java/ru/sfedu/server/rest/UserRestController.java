@@ -1,5 +1,7 @@
 package ru.sfedu.server.rest;
 
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.S3Object;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -14,6 +16,7 @@ import ru.sfedu.server.dto.route.RouteCheckInDTO;
 import ru.sfedu.server.dto.route.RouteDTO;
 import ru.sfedu.server.dto.route.RouteGradeDTO;
 import ru.sfedu.server.dto.user.UserDTO;
+import ru.sfedu.server.model.metainfo.MetaInfo;
 import ru.sfedu.server.model.point.Point;
 import ru.sfedu.server.model.point.PointCheckIn;
 import ru.sfedu.server.model.route.Route;
@@ -24,6 +27,7 @@ import ru.sfedu.server.service.PointDataService;
 import ru.sfedu.server.service.RouteDataService;
 import ru.sfedu.server.service.UserDataService;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -60,6 +64,9 @@ public class UserRestController {
 
     @Autowired
     private SubscriptionTransactionConverter transactionConverter;
+
+    @Autowired
+    private AmazonS3 s3Client;
 
     @Operation(summary = "Получение пользователя", description = "Позволяет получить пользователя по id")
     @GetMapping("/{id}")
@@ -240,16 +247,24 @@ public class UserRestController {
 
     @Operation(summary = "Получвение точек из списка избранного")
     @GetMapping(value = "/points/favourite")
-    public ResponseEntity<Set<PointDTO>> getFavouritePoints(@RequestParam @Parameter(name = "ID пользователя") Long userId) {
+    public ResponseEntity<List<PointDTO>> getFavouritePoints(@RequestParam @Parameter(name = "ID пользователя") Long userId) {
         log.info("Get favourite point userId={}", userId);
         Optional<User> user = userDataService.getById(userId);
         if (user.isEmpty()) {
             log.error("There is no user with such id={}", userId);
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
-        Set<PointDTO> response = (user.get().getFavouritePoints().stream().map(s -> pointConverter.convertToDto(s)).collect(Collectors.toSet()));
-        return new ResponseEntity<>(response, HttpStatus.OK)
-                ;
+        List<PointDTO> response = (user.get().getFavouritePoints().stream().map(s -> pointConverter.convertToDto(s)).collect(Collectors.toList()));
+        for(int i = 0; i < user.get().getFavouritePoints().size(); i++){
+            response.get(i).setPhoto(user.get().getFavouritePoints().get(i).getPhoto().stream().map(s-> {
+                try {
+                    return convertMetaInfoToByte(s);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }).toList());
+        }
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @Operation(summary = "Добавление маршрута в избранное", description = "Позволяет пользователю добавить маршрут в избранное")
@@ -276,15 +291,29 @@ public class UserRestController {
 
     @Operation(summary = "Получвение маршрутов из списка избранного")
     @GetMapping(value = "/routes/favourite")
-    public ResponseEntity<Set<RouteDTO>> getFavouriteRoutes(@RequestParam @Parameter(name = "ID пользователя") Long userId) {
+    public ResponseEntity<List<RouteDTO>> getFavouriteRoutes(@RequestParam @Parameter(name = "ID пользователя") Long userId) {
         log.info("Get favourite point userId={}", userId);
         Optional<User> user = userDataService.getById(userId);
         if (user.isEmpty()) {
             log.error("There is no user with such id={}", userId);
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
-        Set<RouteDTO> response = (user.get().getFavouriteRoutes().stream().map(s -> routeConverter.convertToDto(s)).collect(Collectors.toSet()));
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        List<Route> routes = user.get().getFavouriteRoutes();
+        List<RouteDTO> routeDtos = (user.get().getFavouriteRoutes().stream().map(s -> routeConverter.convertToDto(s)).toList());
+        for (int i = 0; i < routeDtos.size(); i++) {
+            Route route = routes.get(i);
+            RouteDTO dto = routeDtos.get(i);
+            for (int j = 0; j < dto.getStopsOnRoute().size(); j++) {
+                dto.getStopsOnRoute().get(j).setPhoto(route.getStopsOnRoute().get(j).getPhoto().stream().map(s -> {
+                    try {
+                        return convertMetaInfoToByte(s);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                }).toList());
+            }
+        }
+        return new ResponseEntity<>(routeDtos, HttpStatus.OK);
     }
 
     @GetMapping(value = "/points/favourite/ids")
@@ -330,5 +359,22 @@ public class UserRestController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
         return new ResponseEntity<>(userConverter.convertToDto(user.get()), HttpStatus.OK);
+    }
+
+    private byte[] convertMetaInfoToByte(MetaInfo metaInfo) throws IOException {
+        if (metaInfo == null) {
+            return null;
+        }
+        S3Object s3Object = getS3Object(metaInfo.getBucketName(), metaInfo.getKey());
+
+        return convertS3objectToByteArray(s3Object);
+    }
+
+    private byte[] convertS3objectToByteArray(S3Object s3Object) throws IOException {
+        return s3Object.getObjectContent().readAllBytes();
+    }
+
+    private S3Object getS3Object(String bucketName, String key) {
+        return s3Client.getObject(bucketName, key);
     }
 }
