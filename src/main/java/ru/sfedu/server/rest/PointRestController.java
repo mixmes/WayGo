@@ -57,7 +57,15 @@ public class PointRestController {
         if (point.isPresent()) {
             Point pointEntity = point.get();
             PointDTO dto = pointConverter.convertToDto(pointEntity);
-            dto.setPhoto(convertMetaInfoToByte(pointEntity.getPhoto()));
+
+            dto.setPhoto(new ArrayList<>(pointEntity.getPhoto().size()));
+            pointEntity.getPhoto().forEach(s -> {
+                try {
+                    dto.getPhoto().add(convertMetaInfoToByte(s));
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            });
 
             return new ResponseEntity<>(dto, HttpStatus.OK);
         }
@@ -78,7 +86,7 @@ public class PointRestController {
         return ar.map(arMetaInfo -> new ResponseEntity<>(arMetaInfoConverter.convertToDto(arMetaInfo), HttpStatus.OK)).orElseGet(() -> (ResponseEntity<ArMetaInfoDTO>) ResponseEntity.notFound());
     }
 
-    @GetMapping(value = "/audio" , produces = "audio/mpeg")
+    @GetMapping(value = "/audio", produces = "audio/mpeg")
     public ResponseEntity<byte[]> getAudioMetaInfo(@RequestParam(name = "pointId") Long pointId) throws IOException {
         Optional<AudioMetaInfo> audio = dataService.getAudioMetaInfoByPointId(pointId);
 
@@ -103,11 +111,14 @@ public class PointRestController {
         List<PointDTO> pointsDtos = new ArrayList<>();
         points.forEach(s -> {
             PointDTO dto = pointConverter.convertToDto(s);
-            try {
-                dto.setPhoto(convertMetaInfoToByte(s.getPhoto()));
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+            dto.setPhoto(new ArrayList<>(s.getPhoto().size()));
+            s.getPhoto().forEach(photo -> {
+                try {
+                    dto.getPhoto().add(convertMetaInfoToByte(photo));
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            });
             pointsDtos.add(dto);
         });
 

@@ -4,6 +4,9 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -15,5 +18,5 @@ public class PointDTO {
     private String description;
     private double longitude;
     private double latitude;
-    private byte[] photo;
+    private List<byte[]> photo = new ArrayList<>();
 }

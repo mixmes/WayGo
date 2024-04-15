@@ -44,8 +44,8 @@ public class Point {
     @JoinColumn(name = "id_point")
     private Set<PointCheckIn> checkIns;
 
-    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
-    private PhotoMetaInfo photo;
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
+    private List<PhotoMetaInfo> photo = new ArrayList<>();
 
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
     private ArMetaInfo arFileMeta;

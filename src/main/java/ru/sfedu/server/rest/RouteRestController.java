@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.sfedu.server.dto.converters.RouteConverter;
 import ru.sfedu.server.dto.route.RouteDTO;
 import ru.sfedu.server.model.metainfo.PhotoMetaInfo;
+import ru.sfedu.server.model.point.Point;
 import ru.sfedu.server.model.route.Route;
 import ru.sfedu.server.service.PointDataService;
 import ru.sfedu.server.service.RouteDataService;
@@ -47,8 +48,11 @@ public class RouteRestController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
         RouteDTO dto = converter.convertToDto(route.get());
-        for (int i = 0; i < dto.getStopsOnRoute().size(); i++) {
-            dto.getStopsOnRoute().get(i).setPhoto(convertPhotoInfoToByte(route.get().getStopsOnRoute().get(i).getPhoto()));
+        for (int i = 0; i < route.get().getStopsOnRoute().size(); i++) {
+            Point point = route.get().getStopsOnRoute().get(i);
+            for (int j = 0; j < point.getPhoto().size(); j++) {
+                dto.getStopsOnRoute().get(i).getPhoto().add(convertPhotoInfoToByte(point.getPhoto().get(j)));
+            }
         }
         return new ResponseEntity<>(dto, HttpStatus.OK);
     }
@@ -56,7 +60,7 @@ public class RouteRestController {
     @GetMapping("/point")
     public ResponseEntity<List<RouteDTO>> getRoutesByPointId(@RequestParam(name = "pointId") Long pointId) {
         List<RouteDTO> routes = routeDataService.getByPointId(pointId).stream().map(s -> converter.convertToDto(s)).toList();
-        if(routes.isEmpty()){
+        if (routes.isEmpty()) {
             return (ResponseEntity<List<RouteDTO>>) ResponseEntity.notFound();
         }
         return ResponseEntity.ok(routes);
@@ -74,8 +78,14 @@ public class RouteRestController {
         for (int i = 0; i < routeDtos.size(); i++) {
             Route route = routes.get(i);
             RouteDTO dto = routeDtos.get(i);
-            for (int j = 0; i < dto.getStopsOnRoute().size(); i++) {
-                dto.getStopsOnRoute().get(i).setPhoto(convertPhotoInfoToByte(route.getStopsOnRoute().get(i).getPhoto()));
+            for (int j = 0; j < dto.getStopsOnRoute().size(); j++) {
+                dto.getStopsOnRoute().get(j).setPhoto(route.getStopsOnRoute().get(j).getPhoto().stream().map(s -> {
+                    try {
+                        return convertPhotoInfoToByte(s);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                }).toList());
             }
         }
 
