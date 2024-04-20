@@ -7,24 +7,24 @@ import ru.sfedu.server.repository.SubscriptionPlanRepository;
 
 import java.util.Optional;
 
-@Service
+//@Service
 public class SubscriptionPlanDataService {
-    @Autowired
-    private SubscriptionPlanRepository repository;
-
-    public void save(SubscriptionPlan plan) {
-        repository.save(plan);
-    }
-
-    public void delete(SubscriptionPlan plan) {
-        repository.delete(plan);
-    }
-
-    public void deleteById(Long id) {
-        repository.deleteById(id);
-    }
-
-    public Optional<SubscriptionPlan> getById(Long id) {
-        return repository.findById(id);
-    }
+//    @Autowired
+//    private SubscriptionPlanRepository repository;
+//
+//    public void save(SubscriptionPlan plan) {
+//        repository.save(plan);
+//    }
+//
+//    public void delete(SubscriptionPlan plan) {
+//        repository.delete(plan);
+//    }
+//
+//    public void deleteById(Long id) {
+//        repository.deleteById(id);
+//    }
+//
+//    public Optional<SubscriptionPlan> getById(Long id) {
+//        return repository.findById(id);
+//    }
 }

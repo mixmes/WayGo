@@ -9,8 +9,8 @@ import java.util.Set;
 
 @Getter
 @Setter
-@Entity
-@Table(name = "ПланПодписки")
+//@Entity
+//@Table(name = "ПланПодписки")
 public class SubscriptionPlan {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

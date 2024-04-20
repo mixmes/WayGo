@@ -8,8 +8,8 @@ import java.util.Date;
 
 @Getter
 @Setter
-@Entity
-@Table(name = "ОформленнаяПодписка")
+//@Entity
+//@Table(name = "ОформленнаяПодписка")
 public class Subscription {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
