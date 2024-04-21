@@ -343,6 +343,20 @@ public class UserRestController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
+    @Operation(summary = "Обновление пользователя")
+    @PutMapping
+    public ResponseEntity<?> update(@RequestBody UserDTO dto){
+        Optional<User> userOptional = userDataService.getById(dto.getId());
+        if(userOptional.isEmpty()){
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        User user = userOptional.get();
+        user.setEmail(dto.getEmail());
+        user.setName(dto.getName());
+        userDataService.save(user);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
     @Operation(summary = "Удаление пользователя по ID")
     @DeleteMapping
     public ResponseEntity<?> deleteUserById(@RequestParam @Parameter(description = "ID пользователя") Long id) {
