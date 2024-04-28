@@ -13,5 +13,5 @@ public class ArMetaInfo extends MetaInfo{
     @Id
     @GeneratedValue
     private long id;
-    private int scale;
+    private float scale;
 }
