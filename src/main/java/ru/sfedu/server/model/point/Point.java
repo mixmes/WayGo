@@ -62,5 +62,9 @@ public class Point {
     )
     private List<Route> routes = new ArrayList<>();
 
+    public void addPhotos(List<PhotoMetaInfo> metaInfos){
+        this.photo.addAll(metaInfos);
+    }
+
 
 }

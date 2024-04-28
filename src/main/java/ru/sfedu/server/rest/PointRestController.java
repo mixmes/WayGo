@@ -8,13 +8,15 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ru.sfedu.server.dto.converters.ArMetaInfoConverter;
-import ru.sfedu.server.dto.converters.PointCheckInConverter;
-import ru.sfedu.server.dto.converters.PointConverter;
+import ru.sfedu.server.dto.converters.*;
 import ru.sfedu.server.dto.metadata.ArMetaInfoDTO;
+import ru.sfedu.server.dto.metadata.AudioMetaInfoDto;
+import ru.sfedu.server.dto.metadata.MetaInfoDto;
+import ru.sfedu.server.dto.metadata.PhotoMetadataInfoDto;
 import ru.sfedu.server.dto.point.PointDTO;
 import ru.sfedu.server.model.metainfo.ArMetaInfo;
 import ru.sfedu.server.model.metainfo.AudioMetaInfo;
@@ -26,6 +28,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Tag(name = "Точки", description = "Получение точек")
 @RestController()
@@ -43,6 +46,15 @@ public class PointRestController {
 
     @Autowired
     ArMetaInfoConverter arMetaInfoConverter;
+
+    @Autowired
+    AudioMetaInfoConverter audioMetaInfoConverter;
+
+    @Autowired
+    MetaInfoConverter metaInfoConverter;
+
+    @Autowired
+    PhotoMetaInfoConverter photoMetaInfoConverter;
 
     @Autowired
     private AmazonS3 s3Client;
@@ -72,20 +84,23 @@ public class PointRestController {
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
+    @Operation(summary = "Получение id точек по id маршрута")
     @GetMapping("/route")
-    public List<Long> getIdsByRouteId(@RequestParam(name = "routeId") Long routeId) {
+    public List<Long> getIdsByRouteId(@RequestParam(name = "routeId") @Parameter(description = "ID маршрута") Long routeId) {
         List<Long> ids = new ArrayList<>();
         dataService.getByRouteId(routeId).forEach(s -> ids.add(s.getId()));
 
         return ids;
     }
 
+    @Operation(summary = "Получение ArMetaInfo по id точки")
     @GetMapping("/ar")
     public ResponseEntity<ArMetaInfoDTO> getArMetaInfo(@RequestParam(name = "pointId") Long pointId) {
         Optional<ArMetaInfo> ar = dataService.getArMetaInfoByPointId(pointId);
         return ar.map(arMetaInfo -> new ResponseEntity<>(arMetaInfoConverter.convertToDto(arMetaInfo), HttpStatus.OK)).orElseGet(() -> (ResponseEntity<ArMetaInfoDTO>) ResponseEntity.notFound());
     }
 
+    @Operation(summary = "Получение аудио по id точки")
     @GetMapping(value = "/audio", produces = "audio/mpeg")
     public ResponseEntity<byte[]> getAudioMetaInfo(@RequestParam(name = "pointId") Long pointId) throws IOException {
         Optional<AudioMetaInfo> audio = dataService.getAudioMetaInfoByPointId(pointId);
@@ -137,6 +152,7 @@ public class PointRestController {
         return new ResponseEntity<>(points, HttpStatus.OK);
     }
 
+    @Operation(summary = "Получение координат по названию города")
     @GetMapping("/coordinates")
     public ResponseEntity<List<PointDTO>> getCoordinatesByCityName(@RequestParam(name = "city") String city) {
         List<Point> points = dataService.getAllByCity(city);
@@ -188,6 +204,83 @@ public class PointRestController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
+    @Operation(summary = "Добавление ArMetaInfo")
+    @PostMapping("/metainfo/ar")
+    public ResponseEntity<?> addArMetaInfo(@RequestParam(name = "pointId") Long id , @RequestBody ArMetaInfoDTO dto){
+        Optional<Point> point = dataService.getById(id);
+        if(point.isEmpty()){
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        point.get().setArFileMeta(arMetaInfoConverter.convertToEntity(dto));
+        dataService.save(point.get());
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @Operation(summary = "Удаление ArMetaInfo")
+    @DeleteMapping("/metainfo/ar")
+    public ResponseEntity<?> deleteArMetaInfo(@RequestParam(name = "pointId") Long id ){
+        Optional<Point> point = dataService.getById(id);
+        if(point.isEmpty()){
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        point.get().setArFileMeta(null);
+        dataService.save(point.get());
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @Operation(summary = "Добавление AudioMetaInfo")
+    @PostMapping("/metainfo/audio")
+    public ResponseEntity<?> addAudioMetaInfo(@RequestParam(name = "pointId") Long id , @RequestBody AudioMetaInfoDto dto){
+        Optional<Point> point = dataService.getById(id);
+        if(point.isEmpty()){
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        point.get().setAudioMetaInfo(audioMetaInfoConverter.convertToEntity(dto));
+        dataService.save(point.get());
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @Operation(summary = "Удаление AudioMetaInfo")
+    @DeleteMapping("/metainfo/audio")
+    public ResponseEntity<?> deleteAudioMetaInfo(@RequestParam(name = "pointId") Long id){
+        Optional<Point> point = dataService.getById(id);
+        if(point.isEmpty()){
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        point.get().setAudioMetaInfo(null);
+        dataService.save(point.get());
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @Operation(summary = "Добавление множества PhotoMetaInfo")
+    @PostMapping("/metainfo/photos")
+    public ResponseEntity<?> addPhotosMetaInfo(@RequestParam(name = "pointId") Long id , @RequestBody List<PhotoMetadataInfoDto> dtos){
+        Optional<Point> point = dataService.getById(id);
+        if(point.isEmpty()){
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        point.get().addPhotos(dtos.stream().map(s->photoMetaInfoConverter.convertToEntity(s)).collect(Collectors.toList()));
+        dataService.save(point.get());
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @Operation(summary = "Удаление PhotoMetaInfo по названию моделей")
+    @DeleteMapping("/metainfo/photos")
+    public ResponseEntity<?> deletePhotosMetaInfo(@RequestParam(name = "pointId") Long id , @RequestBody List<String> names){
+        Optional<Point> point = dataService.getById(id);
+        if(point.isEmpty()){
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        point.get().getPhoto().forEach(s->{
+            for(String name: names){
+                if(s.getKey().equals(name)){
+                    point.get().getPhoto().remove(s);
+                }
+            }
+        });
+        dataService.save(point.get());
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
 
     private byte[] convertMetaInfoToByte(MetaInfo metaInfo) throws IOException {
         if (metaInfo == null) {

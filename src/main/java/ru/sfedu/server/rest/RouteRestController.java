@@ -57,6 +57,7 @@ public class RouteRestController {
         return new ResponseEntity<>(dto, HttpStatus.OK);
     }
 
+    @Operation(summary = "")
     @GetMapping("/point")
     public ResponseEntity<List<RouteDTO>> getRoutesByPointId(@RequestParam(name = "pointId") Long pointId) {
         List<RouteDTO> routes = routeDataService.getByPointId(pointId).stream().map(s -> converter.convertToDto(s)).toList();
