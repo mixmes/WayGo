@@ -15,6 +15,8 @@ import ru.sfedu.server.dto.converters.AudioMetaInfoConverter;
 import ru.sfedu.server.dto.converters.RouteConverter;
 import ru.sfedu.server.dto.metadata.AudioMetaInfoDto;
 import ru.sfedu.server.dto.route.RouteDTO;
+import ru.sfedu.server.model.metainfo.AudioMetaInfo;
+import ru.sfedu.server.model.metainfo.MetaInfo;
 import ru.sfedu.server.model.metainfo.PhotoMetaInfo;
 import ru.sfedu.server.model.point.Point;
 import ru.sfedu.server.model.route.Route;
@@ -143,6 +145,17 @@ public class RouteRestController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
+    @Operation(summary = "Получение аудио по id маршрута")
+    @GetMapping(value = "/audio", produces = "audio/mpeg")
+    public ResponseEntity<byte[]> getAudioMetaInfo(@RequestParam(name = "routeId") Long pointId) throws IOException {
+        Optional<AudioMetaInfo> audio = routeDataService.getAudioMetaInfoByPointId(pointId);
+        if (audio.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        return new ResponseEntity<>(convertMetaInfoToByte(audio.get()), HttpStatus.OK);
+    }
+
     @Operation(summary = "Удаление AudioMetaInfo")
     @DeleteMapping("/metainfo/audio")
     public ResponseEntity<?> deleteAudioMetaInfo(@RequestParam(name = "pointId") Long id){
@@ -154,6 +167,16 @@ public class RouteRestController {
         routeDataService.save(route.get());
         return new ResponseEntity<>(HttpStatus.OK);
     }
+
+    private byte[] convertMetaInfoToByte(MetaInfo metaInfo) throws IOException {
+        if (metaInfo == null) {
+            return null;
+        }
+        S3Object s3Object = getS3Object(metaInfo.getBucketName(), metaInfo.getKey());
+
+        return convertS3objectToByteArray(s3Object);
+    }
+
 
     private byte[] convertPhotoInfoToByte(PhotoMetaInfo photo) throws IOException {
         S3Object s3Object = getS3Object(photo.getBucketName(), photo.getKey());

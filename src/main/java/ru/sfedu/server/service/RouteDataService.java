@@ -2,6 +2,7 @@ package ru.sfedu.server.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import ru.sfedu.server.model.metainfo.AudioMetaInfo;
 import ru.sfedu.server.model.route.Route;
 import ru.sfedu.server.repository.RouteRepository;
 
@@ -39,5 +40,9 @@ public class RouteDataService {
 
     public List<Route> getByCityAndRouteNameLike(String routeName, String city) {
         return repository.findByRouteNameAndCityLike(routeName, city);
+    }
+
+    public Optional<AudioMetaInfo> getAudioMetaInfoByPointId(Long id) {
+        return repository.findAudioMetaInfoByPointId(id);
     }
 }

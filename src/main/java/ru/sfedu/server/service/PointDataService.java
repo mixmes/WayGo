@@ -47,7 +47,5 @@ public class PointDataService {
         return repository.findArMetaInfoByPointId(id);
     }
 
-    public Optional<AudioMetaInfo> getAudioMetaInfoByPointId(Long id) {
-        return repository.findAudioMetaInfoByPointId(id);
-    }
+
 }

@@ -25,7 +25,6 @@ public interface PointRepository extends JpaRepository<Point, Long> {
     Optional<ArMetaInfo> findArMetaInfoByPointId(@Param("id") Long id);
 
 
-    @Query("SELECT p.audioMetaInfo FROM Point p where p.id = :id")
-    Optional<AudioMetaInfo> findAudioMetaInfoByPointId(@Param("id") Long id);
+
 
 }
