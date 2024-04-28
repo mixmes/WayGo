@@ -3,6 +3,7 @@ package ru.sfedu.server.model.route;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import ru.sfedu.server.model.metainfo.AudioMetaInfo;
 import ru.sfedu.server.model.point.Point;
 
 import java.io.Serializable;
@@ -39,6 +40,9 @@ public class Route implements Serializable {
     @JoinColumn(name = "id_route")
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private Set<RouteCheckIn> routeCheckIns = new HashSet<>();
+
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER,orphanRemoval = true)
+    private AudioMetaInfo audioMetaInfo;
 
     @ManyToMany(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
     @JoinTable(

@@ -11,7 +11,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ru.sfedu.server.dto.converters.AudioMetaInfoConverter;
 import ru.sfedu.server.dto.converters.RouteConverter;
+import ru.sfedu.server.dto.metadata.AudioMetaInfoDto;
 import ru.sfedu.server.dto.route.RouteDTO;
 import ru.sfedu.server.model.metainfo.PhotoMetaInfo;
 import ru.sfedu.server.model.point.Point;
@@ -39,6 +41,9 @@ public class RouteRestController {
 
     @Autowired
     private AmazonS3 s3Client;
+
+    @Autowired
+    AudioMetaInfoConverter audioMetaInfoConverter;
 
     @Operation(summary = "Получение маршрута", description = "ПОзволяет получить маршрут по id")
     @GetMapping("/{id}")
@@ -123,6 +128,30 @@ public class RouteRestController {
     public ResponseEntity<?> deleteRouteById(@RequestParam(name = "id") @Parameter(description = "ID маршрута") Long id) {
         log.info(String.valueOf(id));
         routeDataService.deleteById(id);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @Operation(summary = "Добавление AudioMetaInfo")
+    @PostMapping("/metainfo/audio")
+    public ResponseEntity<?> addAudioMetaInfo(@RequestParam(name = "routeId") Long id , @RequestBody AudioMetaInfoDto dto){
+        Optional<Route> route = routeDataService.getById(id);
+        if(route.isEmpty()){
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        route.get().setAudioMetaInfo(audioMetaInfoConverter.convertToEntity(dto));
+        routeDataService.save(route.get());
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @Operation(summary = "Удаление AudioMetaInfo")
+    @DeleteMapping("/metainfo/audio")
+    public ResponseEntity<?> deleteAudioMetaInfo(@RequestParam(name = "pointId") Long id){
+        Optional<Route> route = routeDataService.getById(id);
+        if(route.isEmpty()){
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        route.get().setAudioMetaInfo(null);
+        routeDataService.save(route.get());
         return new ResponseEntity<>(HttpStatus.OK);
     }
 

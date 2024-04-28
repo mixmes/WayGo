@@ -47,8 +47,6 @@ public class PointRestController {
     @Autowired
     ArMetaInfoConverter arMetaInfoConverter;
 
-    @Autowired
-    AudioMetaInfoConverter audioMetaInfoConverter;
 
     @Autowired
     MetaInfoConverter metaInfoConverter;
@@ -228,29 +226,7 @@ public class PointRestController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @Operation(summary = "Добавление AudioMetaInfo")
-    @PostMapping("/metainfo/audio")
-    public ResponseEntity<?> addAudioMetaInfo(@RequestParam(name = "pointId") Long id , @RequestBody AudioMetaInfoDto dto){
-        Optional<Point> point = dataService.getById(id);
-        if(point.isEmpty()){
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-        point.get().setAudioMetaInfo(audioMetaInfoConverter.convertToEntity(dto));
-        dataService.save(point.get());
-        return new ResponseEntity<>(HttpStatus.OK);
-    }
 
-    @Operation(summary = "Удаление AudioMetaInfo")
-    @DeleteMapping("/metainfo/audio")
-    public ResponseEntity<?> deleteAudioMetaInfo(@RequestParam(name = "pointId") Long id){
-        Optional<Point> point = dataService.getById(id);
-        if(point.isEmpty()){
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-        point.get().setAudioMetaInfo(null);
-        dataService.save(point.get());
-        return new ResponseEntity<>(HttpStatus.OK);
-    }
 
     @Operation(summary = "Добавление множества PhotoMetaInfo")
     @PostMapping("/metainfo/photos")

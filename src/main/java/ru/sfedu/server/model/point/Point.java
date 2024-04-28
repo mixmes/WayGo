@@ -50,10 +50,6 @@ public class Point {
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
     private ArMetaInfo arFileMeta;
 
-    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER,orphanRemoval = true)
-    private AudioMetaInfo audioMetaInfo;
-
-
     @ManyToMany(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
     @JoinTable(
             name = "route_point",
