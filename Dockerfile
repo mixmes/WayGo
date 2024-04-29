@@ -1,4 +1,4 @@
-FROM openjdk:17
+FROM openjdk:17-oracle
 ARG JAR_FILE
 COPY ${JAR_FILE} .
 EXPOSE 8080
