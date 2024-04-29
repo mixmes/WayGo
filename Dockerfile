@@ -1,4 +1,4 @@
 FROM openjdk:17-oracle
-COPY server1.jar /app.jar
+COPY server1.jar .
 EXPOSE 8080
-ENTRYPOINT ["java","-jar","app.jar"]
+ENTRYPOINT ["java","-jar","server1.jar"]
