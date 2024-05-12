@@ -31,7 +31,7 @@ public class RouteConverter implements Converter<Route, RouteDTO> {
 
     @Override
     public Route convertToEntity(RouteDTO dto) {
-        return null;
+        return mapper.map(dto, Route.class);
     }
 
 

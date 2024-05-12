@@ -44,7 +44,7 @@ public class Route implements Serializable {
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER,orphanRemoval = true)
     private AudioMetaInfo audioMetaInfo;
 
-    @ManyToMany(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
+    @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinTable(
             name = "route_point",
             joinColumns = @JoinColumn(name = "id_route"),

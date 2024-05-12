@@ -127,12 +127,34 @@ public class PointRestController {
         return new ResponseEntity<>(pointsDtos, HttpStatus.OK);
     }
 
+    @Operation(
+            summary = "Создание списка точек",
+            description = "Позволяет создать множество точек"
+    )
+    @PostMapping("/all")
+    public ResponseEntity<?> saveListPoints(@RequestBody @Parameter(description = "Список точек") List<PointDTO> points) {
+        for(int i = 0; i<points.size() ; i++){
+            dataService.save(pointConverter.convertToEntity(points.get(i)));
+        }
+        return new ResponseEntity<>(HttpStatus.CREATED);
+    }
+
     @Operation(summary = "Получение списка точек", description = "Позволяет получить список точки по названию города и like названию точки")
     @GetMapping
     public ResponseEntity<List<PointDTO>> getByCityAndName(@RequestParam(name = "city") @Parameter(description = "Название города") String city,
                                                            @RequestParam(name = "pointName") @Parameter(description = "like название точки") String pointName) {
         log.info(city + " " + pointName);
-        List<PointDTO> points = dataService.getByCityAndPointName(city, pointName).stream().map(value -> pointConverter.convertToDto(value)).toList();
+        List<Point> pointsEntity = dataService.getByCityAndPointName(city, pointName);
+        List<PointDTO> points = pointsEntity.stream().map(value -> pointConverter.convertToDto(value)).toList();
+        for(int i=0; i<pointsEntity.size(); i++){
+            points.get(i).setPhoto(pointsEntity.get(i).getPhoto().stream().map(s-> {
+                try {
+                    return convertMetaInfoToByte(s);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }).toList());
+        }
         if (points.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
@@ -164,9 +186,8 @@ public class PointRestController {
             summary = "Создание точки",
             description = "Позволяет создать точку"
     )
-    @PostMapping(consumes = "multipart/form-data")
-
-    public ResponseEntity<?> createPoint(@RequestParam @Parameter(description = "Точка") PointDTO dto) {
+    @PostMapping
+    public ResponseEntity<?> createPoint(@RequestBody @Parameter(description = "Точка") PointDTO dto) {
         dataService.save(pointConverter.convertToEntity(dto));
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
