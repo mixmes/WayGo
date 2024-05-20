@@ -37,9 +37,9 @@ public class Route implements Serializable {
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private Set<RouteGrade> routeGrades = new HashSet<>();
 
-    @JoinColumn(name = "id_route")
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-    private Set<RouteCheckIn> routeCheckIns = new HashSet<>();
+    //@JoinColumn(name = "id_route")
+    //@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    //private Set<RouteCheckIn> routeCheckIns = new HashSet<>();
 
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER,orphanRemoval = true)
     private AudioMetaInfo audioMetaInfo;

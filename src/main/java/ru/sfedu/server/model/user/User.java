@@ -41,13 +41,13 @@ public class User {
     )
     private Set<RouteGrade> routeGrades = new HashSet<>();
 
-    @JoinColumn(name = "id_user")
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-    private Set<RouteCheckIn> routeCheckIns = new HashSet<>();
+    //@JoinColumn(name = "id_user")
+    //@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    //private Set<RouteCheckIn> routeCheckIns = new HashSet<>();
 
-    @JoinColumn(name = "id_user")
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-    private Set<PointCheckIn> pointCheckIns = new HashSet<>();
+    //@JoinColumn(name = "id_user")
+    //@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    //private Set<PointCheckIn> pointCheckIns = new HashSet<>();
 
 //    @JoinColumn(name = "id_user")
 //    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
@@ -77,11 +77,11 @@ public class User {
     }
 
     public void addRouteCheckIn(RouteCheckIn checkIn) {
-        routeCheckIns.add(checkIn);
+        //routeCheckIns.add(checkIn);
     }
 
     public void addPointCheckIn(PointCheckIn checkIn) {
-        pointCheckIns.add(checkIn);
+        //pointCheckIns.add(checkIn);
     }
 
 //    public void addSubscriptionTransaction(SubscriptionTransaction transaction) {

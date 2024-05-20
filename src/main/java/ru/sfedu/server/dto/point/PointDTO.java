@@ -1,5 +1,7 @@
 package ru.sfedu.server.dto.point;
 
+import io.swagger.v3.oas.annotations.Hidden;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -18,5 +20,6 @@ public class PointDTO {
     private String description;
     private double longitude;
     private double latitude;
+    @Hidden
     private List<byte[]> photo = new ArrayList<>();
 }

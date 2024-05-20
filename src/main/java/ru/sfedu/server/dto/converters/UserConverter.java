@@ -18,8 +18,8 @@ public class UserConverter implements Converter<User, UserDTO>{
         TypeMap<User,UserDTO> propertyMapper = mapper.createTypeMap(User.class, UserDTO.class);
         propertyMapper.addMappings(mapper -> mapper.map(User::getFavouritePoints, UserDTO::setFavouritePoints));
         propertyMapper.addMappings(mapper -> mapper.map(User::getFavouriteRoutes, UserDTO::setFavouriteRoutes));
-        propertyMapper.addMappings(mapper -> mapper.map(User::getPointCheckIns, UserDTO::setPointCheckIns));
-        propertyMapper.addMappings(mapper -> mapper.map(User::getRouteCheckIns, UserDTO::setRouteCheckIns));
+        //propertyMapper.addMappings(mapper -> mapper.map(User::getPointCheckIns, UserDTO::setPointCheckIns));
+        //propertyMapper.addMappings(mapper -> mapper.map(User::getRouteCheckIns, UserDTO::setRouteCheckIns));
         propertyMapper.addMappings(mapper -> mapper.map(User::getRouteGrades, UserDTO::setRouteGrades));
 //        propertyMapper.addMappings(mapper -> mapper.map(User::getSubscriptionTransactions,UserDTO::setSubscriptionTransactions));
 //        propertyMapper.addMappings(mapper -> mapper.map(User::getSubscription, UserDTO::setSubscription));

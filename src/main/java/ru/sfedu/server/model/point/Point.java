@@ -40,9 +40,9 @@ public class Point {
     @Column(name = "latitude")
     private double latitude;
 
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
-    @JoinColumn(name = "id_point")
-    private Set<PointCheckIn> checkIns;
+    //@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
+    //@JoinColumn(name = "id_point")
+    //private Set<PointCheckIn> checkIns;
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
     private List<PhotoMetaInfo> photo = new ArrayList<>();
