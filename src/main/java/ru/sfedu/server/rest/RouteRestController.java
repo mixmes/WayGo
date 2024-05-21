@@ -118,6 +118,45 @@ public class RouteRestController {
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
+    @Operation(summary = "Прикрепление точки к маршруту")
+    @PostMapping("/point")
+    public ResponseEntity<?> addPoint(@RequestParam(name = "routeId") @Parameter(description = "ID маршрута") Long routeId,
+                                      @RequestParam(name = "pointId") @Parameter(description = "pointId") Long pointId){
+        Optional<Route> route = routeDataService.getById(routeId);
+        if(route.isEmpty()){
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        Optional<Point> point = pointDataService.getById(pointId);
+        if(point.isEmpty()){
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        route.get().getStopsOnRoute().add(point.get());
+
+        routeDataService.save(route.get());
+
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @Operation(summary = "Открепление точки от маршрута")
+    @DeleteMapping("/point")
+    public ResponseEntity<?> removePoint(@RequestParam(name = "routeId") @Parameter(description = "ID маршрута") Long routeId,
+                                      @RequestParam(name = "pointId") @Parameter(description = "pointId") Long pointId){
+        Optional<Route> route = routeDataService.getById(routeId);
+        if(route.isEmpty()){
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        Optional<Point> point = pointDataService.getById(pointId);
+        if(point.isEmpty()){
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        route.get().getStopsOnRoute().remove(point.get());
+
+        routeDataService.save(route.get());
+
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+
     @Operation(summary = "Обновление маршрута")
     @PutMapping
     public ResponseEntity<?> updateRoute(@RequestBody RouteDTO dto) {
