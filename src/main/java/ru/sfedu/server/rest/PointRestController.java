@@ -23,6 +23,7 @@ import ru.sfedu.server.model.metainfo.AudioMetaInfo;
 import ru.sfedu.server.model.metainfo.MetaInfo;
 import ru.sfedu.server.model.point.Point;
 import ru.sfedu.server.service.PointDataService;
+import ru.sfedu.server.service.UserDataService;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -37,6 +38,9 @@ public class PointRestController {
     private static final Logger log = LoggerFactory.getLogger(PointRestController.class);
     @Autowired
     private PointDataService dataService;
+
+    @Autowired
+    private UserDataService userDataService;
 
     @Autowired
     private PointConverter pointConverter;
@@ -208,6 +212,14 @@ public class PointRestController {
     )
     @DeleteMapping
     public ResponseEntity<?> deletePointByID(@RequestParam @Parameter(description = "ID точки") Long id) {
+        Optional<Point> point = dataService.getById(id);
+        if(point.isEmpty()){
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        userDataService.getAll().forEach(s->{
+            s.deleteFavouritePoint(point.get());
+            userDataService.save(s);
+        });
         dataService.deleteById(id);
         return new ResponseEntity<>(HttpStatus.OK);
     }

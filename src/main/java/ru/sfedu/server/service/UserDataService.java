@@ -36,6 +36,10 @@ public class UserDataService {
         return repository.findByUid(uid);
     }
 
+    public List<User> getAll(){
+        return repository.findAll();
+    }
+
     public List<Long> getFavouritePointsIds(Long id){
         return repository.findAllFavouritePointsById(id).stream().map(Point::getId).toList();
     }

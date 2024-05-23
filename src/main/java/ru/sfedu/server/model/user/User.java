@@ -56,7 +56,7 @@ public class User {
 //    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
 //    private Subscription subscription;
 
-    @ManyToMany(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
+    @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinTable(
             name = "user_favorites_route",
             joinColumns = @JoinColumn(name = "id_user"),

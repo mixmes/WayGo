@@ -22,6 +22,7 @@ import ru.sfedu.server.model.point.Point;
 import ru.sfedu.server.model.route.Route;
 import ru.sfedu.server.service.PointDataService;
 import ru.sfedu.server.service.RouteDataService;
+import ru.sfedu.server.service.UserDataService;
 
 import java.io.IOException;
 import java.util.List;
@@ -37,6 +38,9 @@ public class RouteRestController {
 
     @Autowired
     private PointDataService pointDataService;
+
+    @Autowired
+    private UserDataService userDataService;
 
     @Autowired
     private RouteConverter converter;
@@ -168,6 +172,19 @@ public class RouteRestController {
     @DeleteMapping
     public ResponseEntity<?> deleteRouteById(@RequestParam(name = "id") @Parameter(description = "ID маршрута") Long id) {
         log.info(String.valueOf(id));
+        Optional<Route> route = routeDataService.getById(id);
+        if(route.isEmpty()){
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        userDataService.getAll().stream().forEach(s->{
+            log.info(String.valueOf(s.getId()));
+            log.info("fav size"+s.getFavouriteRoutes().size());
+            s.deleteFavouriteRoute(route.get());
+            log.info("fav size"+s.getFavouriteRoutes().size());
+            log.info("__________________");
+            userDataService.save(s);
+
+        });
         routeDataService.deleteById(id);
         return new ResponseEntity<>(HttpStatus.OK);
     }
