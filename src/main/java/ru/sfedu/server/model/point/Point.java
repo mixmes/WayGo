@@ -62,5 +62,14 @@ public class Point {
         this.photo.addAll(metaInfos);
     }
 
+    public void updatePoint(Point updated){
+        this.setPointName(updated.pointName);
+        this.setArFileMeta(updated.arFileMeta);
+        this.setAddress(updated.address);
+        this.setDescription(updated.description);
+        this.setLatitude(updated.latitude);
+        this.setLongitude(updated.longitude);
+    }
+
 
 }

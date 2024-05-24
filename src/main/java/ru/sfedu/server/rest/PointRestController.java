@@ -202,7 +202,10 @@ public class PointRestController {
     )
     @PutMapping
     public ResponseEntity<?> updatePoint(@RequestBody @Parameter(description = "Точка") PointDTO dto) {
-        dataService.save(pointConverter.convertToEntity(dto));
+        Optional<Point> point = dataService.getById(dto.getId());
+        point.get().updatePoint(pointConverter.convertToEntity(dto));
+
+        dataService.save(point.get());
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
