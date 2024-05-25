@@ -164,7 +164,12 @@ public class RouteRestController {
     @Operation(summary = "Обновление маршрута")
     @PutMapping
     public ResponseEntity<?> updateRoute(@RequestBody RouteDTO dto) {
-        routeDataService.save(converter.convertToEntity(dto));
+        Optional<Route> route = routeDataService.getById(dto.getId());
+        if(route.isEmpty()){
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        route.get().updateRoute(converter.convertToEntity(dto));
+        routeDataService.save(route.get());
         return new ResponseEntity<>(HttpStatus.OK);
     }
 

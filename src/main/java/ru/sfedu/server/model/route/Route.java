@@ -51,4 +51,11 @@ public class Route implements Serializable {
             inverseJoinColumns = @JoinColumn(name = "id_point")
     )
     private List<Point> stopsOnRoute = new ArrayList<>();
+
+    public void updateRoute(Route updated){
+        this.setRouteName(updated.routeName);
+        this.setDescription(updated.description);
+        this.setLength(updated.length);
+        this.setCity(updated.city);
+    }
 }
