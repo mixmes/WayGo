@@ -91,13 +91,9 @@ public class RouteRestController {
             Route route = routes.get(i);
             RouteDTO dto = routeDtos.get(i);
             for (int j = 0; j < dto.getStopsOnRoute().size(); j++) {
-                dto.getStopsOnRoute().get(j).setPhoto(route.getStopsOnRoute().get(j).getPhoto().stream().map(s -> {
-                    try {
-                        return convertPhotoInfoToByte(s);
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                }).toList());
+                dto.getStopsOnRoute().get(j).setPhoto(
+                        List.of(convertPhotoInfoToByte(route.getStopsOnRoute().get(j).getPhoto().get(0)))
+                );
             }
         }
 
@@ -125,13 +121,13 @@ public class RouteRestController {
     @Operation(summary = "Прикрепление точки к маршруту")
     @PostMapping("/point")
     public ResponseEntity<?> addPoint(@RequestParam(name = "routeId") @Parameter(description = "ID маршрута") Long routeId,
-                                      @RequestParam(name = "pointId") @Parameter(description = "pointId") Long pointId){
+                                      @RequestParam(name = "pointId") @Parameter(description = "pointId") Long pointId) {
         Optional<Route> route = routeDataService.getById(routeId);
-        if(route.isEmpty()){
+        if (route.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
         Optional<Point> point = pointDataService.getById(pointId);
-        if(point.isEmpty()){
+        if (point.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
         route.get().getStopsOnRoute().add(point.get());
@@ -144,13 +140,13 @@ public class RouteRestController {
     @Operation(summary = "Открепление точки от маршрута")
     @DeleteMapping("/point")
     public ResponseEntity<?> removePoint(@RequestParam(name = "routeId") @Parameter(description = "ID маршрута") Long routeId,
-                                      @RequestParam(name = "pointId") @Parameter(description = "pointId") Long pointId){
+                                         @RequestParam(name = "pointId") @Parameter(description = "pointId") Long pointId) {
         Optional<Route> route = routeDataService.getById(routeId);
-        if(route.isEmpty()){
+        if (route.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
         Optional<Point> point = pointDataService.getById(pointId);
-        if(point.isEmpty()){
+        if (point.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
         route.get().getStopsOnRoute().remove(point.get());
@@ -165,7 +161,7 @@ public class RouteRestController {
     @PutMapping
     public ResponseEntity<?> updateRoute(@RequestBody RouteDTO dto) {
         Optional<Route> route = routeDataService.getById(dto.getId());
-        if(route.isEmpty()){
+        if (route.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
         route.get().updateRoute(converter.convertToEntity(dto));
@@ -178,14 +174,14 @@ public class RouteRestController {
     public ResponseEntity<?> deleteRouteById(@RequestParam(name = "id") @Parameter(description = "ID маршрута") Long id) {
         log.info(String.valueOf(id));
         Optional<Route> route = routeDataService.getById(id);
-        if(route.isEmpty()){
+        if (route.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
-        userDataService.getAll().stream().forEach(s->{
+        userDataService.getAll().stream().forEach(s -> {
             log.info(String.valueOf(s.getId()));
-            log.info("fav size"+s.getFavouriteRoutes().size());
+            log.info("fav size" + s.getFavouriteRoutes().size());
             s.deleteFavouriteRoute(route.get());
-            log.info("fav size"+s.getFavouriteRoutes().size());
+            log.info("fav size" + s.getFavouriteRoutes().size());
             log.info("__________________");
             userDataService.save(s);
 
@@ -196,9 +192,9 @@ public class RouteRestController {
 
     @Operation(summary = "Добавление AudioMetaInfo")
     @PostMapping("/metainfo/audio")
-    public ResponseEntity<?> addAudioMetaInfo(@RequestParam(name = "routeId") Long id , @RequestBody AudioMetaInfoDto dto){
+    public ResponseEntity<?> addAudioMetaInfo(@RequestParam(name = "routeId") Long id, @RequestBody AudioMetaInfoDto dto) {
         Optional<Route> route = routeDataService.getById(id);
-        if(route.isEmpty()){
+        if (route.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
         route.get().setAudioMetaInfo(audioMetaInfoConverter.convertToEntity(dto));
@@ -219,9 +215,9 @@ public class RouteRestController {
 
     @Operation(summary = "Удаление AudioMetaInfo")
     @DeleteMapping("/metainfo/audio")
-    public ResponseEntity<?> deleteAudioMetaInfo(@RequestParam(name = "pointId") Long id){
+    public ResponseEntity<?> deleteAudioMetaInfo(@RequestParam(name = "pointId") Long id) {
         Optional<Route> route = routeDataService.getById(id);
-        if(route.isEmpty()){
+        if (route.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
         route.get().setAudioMetaInfo(null);
