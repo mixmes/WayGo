@@ -21,6 +21,7 @@ import ru.sfedu.server.dto.point.PointDTO;
 import ru.sfedu.server.model.metainfo.ArMetaInfo;
 import ru.sfedu.server.model.metainfo.AudioMetaInfo;
 import ru.sfedu.server.model.metainfo.MetaInfo;
+import ru.sfedu.server.model.metainfo.PhotoMetaInfo;
 import ru.sfedu.server.model.point.Point;
 import ru.sfedu.server.service.PointDataService;
 import ru.sfedu.server.service.UserDataService;
@@ -255,7 +256,7 @@ public class PointRestController {
 
     @Operation(summary = "Добавление множества PhotoMetaInfo")
     @PostMapping("/metainfo/photos")
-    public ResponseEntity<?> addPhotosMetaInfo(@RequestParam(name = "pointId") Long id , @RequestBody List<PhotoMetadataInfoDto> dtos){
+    public ResponseEntity<?> addPhotosMetaInfo(@RequestParam(name = "pointId") Long id ,@Parameter(name = "название моделей") @RequestBody List<PhotoMetadataInfoDto> dtos){
         Optional<Point> point = dataService.getById(id);
         if(point.isEmpty()){
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -265,20 +266,15 @@ public class PointRestController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @Operation(summary = "Удаление PhotoMetaInfo по названию моделей")
+    @Operation(summary = "Удаление фото по названию")
     @DeleteMapping("/metainfo/photos")
-    public ResponseEntity<?> deletePhotosMetaInfo(@RequestParam(name = "pointId") Long id , @RequestBody List<String> names){
-        Optional<Point> point = dataService.getById(id);
+    public ResponseEntity<?> deletePhoto(@RequestParam(name ="pointId") Long pointId,
+                                          @RequestParam(name = "photo")  String photo){
+        Optional<Point> point = dataService.getById(pointId);
         if(point.isEmpty()){
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
-        point.get().getPhoto().forEach(s->{
-            for(String name: names){
-                if(s.getKey().equals(name)){
-                    point.get().getPhoto().remove(s);
-                }
-            }
-        });
+        point.get().getPhoto().removeIf(s-> s.getKey().equals(photo));
         dataService.save(point.get());
         return new ResponseEntity<>(HttpStatus.OK);
     }
