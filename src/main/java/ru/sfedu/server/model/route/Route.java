@@ -7,10 +7,7 @@ import ru.sfedu.server.model.metainfo.AudioMetaInfo;
 import ru.sfedu.server.model.point.Point;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Getter
 @Setter
@@ -37,11 +34,18 @@ public class Route implements Serializable {
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private Set<RouteGrade> routeGrades = new HashSet<>();
 
+    @ElementCollection
+    @CollectionTable(name="route_order_of_points",
+            indexes = {@Index(columnList = "point_order")},
+            joinColumns = @JoinColumn(name = "route_id"))
+    @Column(name = "id")
+    private List<Long> orderOfPoints = new LinkedList<>();
+
     //@JoinColumn(name = "id_route")
     //@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     //private Set<RouteCheckIn> routeCheckIns = new HashSet<>();
 
-    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER,orphanRemoval = true)
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
     private AudioMetaInfo audioMetaInfo;
 
     @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
@@ -52,10 +56,36 @@ public class Route implements Serializable {
     )
     private List<Point> stopsOnRoute = new ArrayList<>();
 
-    public void updateRoute(Route updated){
+    public void updateRoute(Route updated) {
         this.setRouteName(updated.routeName);
         this.setDescription(updated.description);
         this.setLength(updated.length);
         this.setCity(updated.city);
+    }
+
+    public void addPoint(Point point) {
+        if (!orderOfPoints.contains(point.getId())) {
+            orderOfPoints.add(point.getId());
+            stopsOnRoute.add(point);
+        }
+    }
+
+    public void deletePoint(Point point) {
+        if (orderOfPoints.contains(point.getId())) {
+            orderOfPoints.remove(point.getId());
+            stopsOnRoute.remove(point);
+        }
+    }
+
+    public LinkedList<Point> getOrderedPoints(){
+        if(orderOfPoints == null || orderOfPoints.isEmpty()){
+            return new LinkedList<>(stopsOnRoute);
+        }
+        LinkedList<Point> points = new LinkedList<>();
+        orderOfPoints.stream().forEach(id->{
+            points.add(stopsOnRoute.stream().filter(s->s.getId() == id).findFirst().get());
+        });
+
+        return points;
     }
 }

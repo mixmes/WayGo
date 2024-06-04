@@ -25,6 +25,7 @@ import ru.sfedu.server.service.RouteDataService;
 import ru.sfedu.server.service.UserDataService;
 
 import java.io.IOException;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 
@@ -130,7 +131,7 @@ public class RouteRestController {
         if (point.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
-        route.get().getStopsOnRoute().add(point.get());
+        route.get().addPoint(point.get());
 
         routeDataService.save(route.get());
 
@@ -149,10 +150,31 @@ public class RouteRestController {
         if (point.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
-        route.get().getStopsOnRoute().remove(point.get());
+        route.get().deletePoint(point.get());
 
         routeDataService.save(route.get());
 
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @Operation(summary = "Задать порядок маршруту")
+    @PostMapping("/order")
+    public ResponseEntity<?> makeOrder(@RequestParam(name = "routeId") Long routeId,
+                                       @RequestBody List<Long> pointIds){
+        Optional<Route> route = routeDataService.getById(routeId);
+        if(route.isEmpty()){
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        for(Long id: pointIds){
+            if(route.get().getStopsOnRoute().stream().filter(p -> p.getId() == id).findAny().isEmpty()){
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            }
+        }
+        if(route.get().getStopsOnRoute().size() != pointIds.size()){
+            return new ResponseEntity<>("Список id не соответствует списку точек!",HttpStatus.BAD_REQUEST);
+        }
+        route.get().setOrderOfPoints(new LinkedList<>(pointIds));
+        routeDataService.save(route.get());
         return new ResponseEntity<>(HttpStatus.OK);
     }
 

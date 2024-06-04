@@ -19,7 +19,7 @@ public class RouteConverter implements Converter<Route, RouteDTO> {
     private void init() {
         TypeMap<Route, RouteDTO> propertyMapper = mapper.createTypeMap(Route.class, RouteDTO.class);
         propertyMapper.addMappings(mapper -> mapper.map(Route::getRouteGrades, RouteDTO::setRouteGrades));
-        propertyMapper.addMappings(mapper -> mapper.map(Route::getStopsOnRoute, RouteDTO::setStopsOnRoute));
+        propertyMapper.addMappings(mapper -> mapper.map(Route::getOrderedPoints, RouteDTO::setStopsOnRoute));
     }
 
     @Override
