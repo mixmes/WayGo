@@ -25,6 +25,7 @@ import ru.sfedu.server.service.RouteDataService;
 import ru.sfedu.server.service.UserDataService;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
@@ -200,14 +201,14 @@ public class RouteRestController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
         userDataService.getAll().stream().forEach(s -> {
-            log.info(String.valueOf(s.getId()));
-            log.info("fav size" + s.getFavouriteRoutes().size());
             s.deleteFavouriteRoute(route.get());
-            log.info("fav size" + s.getFavouriteRoutes().size());
-            log.info("__________________");
             userDataService.save(s);
 
         });
+        route.get().setOrderOfPoints(null);
+        route.get().setStopsOnRoute(null);
+        routeDataService.save(route.get());
+
         routeDataService.deleteById(id);
         return new ResponseEntity<>(HttpStatus.OK);
     }

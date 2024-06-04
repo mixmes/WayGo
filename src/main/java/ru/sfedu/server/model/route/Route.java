@@ -36,7 +36,6 @@ public class Route implements Serializable {
 
     @ElementCollection
     @CollectionTable(name="route_order_of_points",
-            indexes = {@Index(columnList = "point_order")},
             joinColumns = @JoinColumn(name = "route_id"))
     @Column(name = "id")
     private List<Long> orderOfPoints = new LinkedList<>();
