@@ -1,36 +1,50 @@
 package ru.sfedu.server.rest;
 
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.S3Object;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.tags.Tag;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import ru.sfedu.server.dto.converters.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.S3Object;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import ru.sfedu.server.dto.converters.ArMetaInfoConverter;
+import ru.sfedu.server.dto.converters.MetaInfoConverter;
+import ru.sfedu.server.dto.converters.PhotoMetaInfoConverter;
+import ru.sfedu.server.dto.converters.PointCheckInConverter;
+import ru.sfedu.server.dto.converters.PointConverter;
 import ru.sfedu.server.dto.metadata.ArMetaInfoDTO;
-import ru.sfedu.server.dto.metadata.AudioMetaInfoDto;
-import ru.sfedu.server.dto.metadata.MetaInfoDto;
 import ru.sfedu.server.dto.metadata.PhotoMetadataInfoDto;
 import ru.sfedu.server.dto.point.PointDTO;
 import ru.sfedu.server.model.metainfo.ArMetaInfo;
-import ru.sfedu.server.model.metainfo.AudioMetaInfo;
 import ru.sfedu.server.model.metainfo.MetaInfo;
 import ru.sfedu.server.model.metainfo.PhotoMetaInfo;
 import ru.sfedu.server.model.point.Point;
 import ru.sfedu.server.service.PointDataService;
 import ru.sfedu.server.service.UserDataService;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Tag(name = "Точки", description = "Получение точек")
 @RestController()
@@ -73,14 +87,11 @@ public class PointRestController {
             Point pointEntity = point.get();
             PointDTO dto = pointConverter.convertToDto(pointEntity);
 
-            dto.setPhoto(new ArrayList<>(pointEntity.getPhoto().size()));
-            pointEntity.getPhoto().forEach(s -> {
-                try {
-                    dto.getPhoto().add(convertMetaInfoToByte(s));
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            });
+            var futures = getPhotosFutures(pointEntity.getPhoto());
+            CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+            var photoBytes = futures.stream().map(CompletableFuture::join).collect(Collectors.toList());
+
+            dto.setPhoto(photoBytes);
 
             return new ResponseEntity<>(dto, HttpStatus.OK);
         }
@@ -116,20 +127,28 @@ public class PointRestController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
         List<PointDTO> pointsDtos = new ArrayList<>();
-        points.forEach(s -> {
+        
+        points.forEach((Point s) -> {
             PointDTO dto = pointConverter.convertToDto(s);
-            dto.setPhoto(new ArrayList<>(s.getPhoto().size()));
-            s.getPhoto().forEach(photo -> {
-                try {
-                    dto.getPhoto().add(convertMetaInfoToByte(photo));
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            });
+            var futures = getPhotosFutures(s.getPhoto());
+            CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+            var photoBytes = futures.stream().map(CompletableFuture::join).collect(Collectors.toList());
+            
+            dto.setPhoto(photoBytes);
+            
             pointsDtos.add(dto);
         });
 
         return new ResponseEntity<>(pointsDtos, HttpStatus.OK);
+    }
+
+    private int photosCount(List<Point> points){
+        int count = 0;
+        for(Point p : points){
+            count += p.getPhoto().size();
+        }
+
+        return count;
     }
 
     @Operation(
@@ -277,6 +296,49 @@ public class PointRestController {
         point.get().getPhoto().removeIf(s-> s.getKey().equals(photo));
         dataService.save(point.get());
         return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @GetMapping("/metainfos/photos")
+    public ResponseEntity<?> getPhotosByPointId(@RequestParam Long pointId){
+        List<PhotoMetaInfo> metainfos = dataService.getPhotoMetaInfosById(pointId);
+        var futures = getPhotosFutures(metainfos);
+
+        var photoBytes = futures.stream().map(future -> {
+            byte[] photo = null;
+            try {
+                photo = future.get();
+            } catch (InterruptedException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            } catch (ExecutionException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+            return photo;
+        }).collect(Collectors.toList());
+        
+        return new ResponseEntity<>(photoBytes, HttpStatus.OK);
+    }
+
+    private List<CompletableFuture<byte[]>> getPhotosFutures(List<PhotoMetaInfo> metaInfos){
+        ExecutorService executor = Executors.newFixedThreadPool(metaInfos.size());
+        List<CompletableFuture<byte[]>> futures = metaInfos.stream().map(
+            info -> CompletableFuture.supplyAsync(
+                () -> {
+                    S3Object s3Object = getS3Object(info.getBucketName(), info.getKey());
+                    byte[] bytes = null;
+                    try {
+                        bytes =  convertS3objectToByteArray(s3Object);
+                    } catch (IOException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
+                    return bytes;
+                },executor)
+                
+        ).toList();
+
+        return futures;
     }
 
     private byte[] convertMetaInfoToByte(MetaInfo metaInfo) throws IOException {

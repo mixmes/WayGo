@@ -1,15 +1,16 @@
 package ru.sfedu.server.repository;
 
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-import ru.sfedu.server.model.metainfo.ArMetaInfo;
-import ru.sfedu.server.model.metainfo.AudioMetaInfo;
-import ru.sfedu.server.model.point.Point;
 
-import java.util.List;
-import java.util.Optional;
+import ru.sfedu.server.model.metainfo.ArMetaInfo;
+import ru.sfedu.server.model.metainfo.PhotoMetaInfo;
+import ru.sfedu.server.model.point.Point;
 
 @Repository
 public interface PointRepository extends JpaRepository<Point, Long> {
@@ -23,6 +24,9 @@ public interface PointRepository extends JpaRepository<Point, Long> {
 
     @Query("SELECT p.arFileMeta FROM Point p where p.id = :id")
     Optional<ArMetaInfo> findArMetaInfoByPointId(@Param("id") Long id);
+
+    @Query("SELECT p.photo FROM Point p where p.id = :id")
+    List<PhotoMetaInfo> findPhotoMetaInfoByPointId(@Param("id") Long id);
 
 
 
