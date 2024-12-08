@@ -87,11 +87,11 @@ public class PointRestController {
             Point pointEntity = point.get();
             PointDTO dto = pointConverter.convertToDto(pointEntity);
 
-            var futures = getPhotosFutures(pointEntity.getPhoto());
-            CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
-            var photoBytes = futures.stream().map(CompletableFuture::join).collect(Collectors.toList());
-
-            dto.setPhoto(photoBytes);
+//            var futures = getPhotosFutures(pointEntity.getPhoto());
+//            CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+//            var photoBytes = futures.stream().map(CompletableFuture::join).collect(Collectors.toList());
+//
+//            dto.setPhoto(photoBytes);
 
             return new ResponseEntity<>(dto, HttpStatus.OK);
         }
@@ -130,11 +130,11 @@ public class PointRestController {
         
         points.forEach((Point s) -> {
             PointDTO dto = pointConverter.convertToDto(s);
-            var futures = getPhotosFutures(s.getPhoto());
-            CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
-            var photoBytes = futures.stream().map(CompletableFuture::join).collect(Collectors.toList());
-            
-            dto.setPhoto(photoBytes);
+//            var futures = getPhotosFutures(s.getPhoto());
+//            CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+//            var photoBytes = futures.stream().map(CompletableFuture::join).collect(Collectors.toList());
+//
+//            dto.setPhoto(photoBytes);
             
             pointsDtos.add(dto);
         });
@@ -170,15 +170,15 @@ public class PointRestController {
         log.info(city + " " + pointName);
         List<Point> pointsEntity = dataService.getByCityAndPointName(city, pointName);
         List<PointDTO> points = pointsEntity.stream().map(value -> pointConverter.convertToDto(value)).toList();
-        for(int i=0; i<pointsEntity.size(); i++){
-            points.get(i).setPhoto(pointsEntity.get(i).getPhoto().stream().map(s-> {
-                try {
-                    return convertMetaInfoToByte(s);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            }).toList());
-        }
+//        for(int i=0; i<pointsEntity.size(); i++){
+//            points.get(i).setPhoto(pointsEntity.get(i).getPhoto().stream().map(s-> {
+//                try {
+//                    return convertMetaInfoToByte(s);
+//                } catch (IOException e) {
+//                    throw new RuntimeException(e);
+//                }
+//            }).toList());
+//        }
         if (points.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
@@ -307,10 +307,7 @@ public class PointRestController {
             byte[] photo = null;
             try {
                 photo = future.get();
-            } catch (InterruptedException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            } catch (ExecutionException e) {
+            } catch (InterruptedException | ExecutionException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             }

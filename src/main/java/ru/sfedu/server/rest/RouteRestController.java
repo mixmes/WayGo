@@ -25,10 +25,11 @@ import ru.sfedu.server.service.RouteDataService;
 import ru.sfedu.server.service.UserDataService;
 
 import java.io.IOException;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 @Tag(name = "Маршруты(экскурсии)", description = "Получение маршрутов")
 @RestController
@@ -53,7 +54,7 @@ public class RouteRestController {
     @Autowired
     AudioMetaInfoConverter audioMetaInfoConverter;
 
-    @Operation(summary = "Получение маршрута", description = "ПОзволяет получить маршрут по id")
+    @Operation(summary = "Получение маршрута", description = "Позволяет получить маршрут по id")
     @GetMapping("/{id}")
     public ResponseEntity<RouteDTO> getRouteById(@PathVariable @Parameter(description = "ID маршрута") Long id) throws IOException {
         Optional<Route> route = routeDataService.getById(id);
@@ -61,12 +62,12 @@ public class RouteRestController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
         RouteDTO dto = converter.convertToDto(route.get());
-        for (int i = 0; i < route.get().getStopsOnRoute().size(); i++) {
-            Point point = route.get().getStopsOnRoute().get(i);
-            for (int j = 0; j < point.getPhoto().size(); j++) {
-                dto.getStopsOnRoute().get(i).getPhoto().add(convertPhotoInfoToByte(point.getPhoto().get(j)));
-            }
-        }
+//        for (int i = 0; i < route.get().getStopsOnRoute().size(); i++) {
+//            Point point = route.get().getStopsOnRoute().get(i);
+//            for (int j = 0; j < point.getPhoto().size(); j++) {
+//                dto.getStopsOnRoute().get(i).getPhoto().add(convertPhotoInfoToByte(point.getPhoto().get(j)));
+//            }
+//        }
         return new ResponseEntity<>(dto, HttpStatus.OK);
     }
 
@@ -89,15 +90,15 @@ public class RouteRestController {
         }
         List<RouteDTO> routeDtos = routes.stream().map(value -> converter.convertToDto(value)).toList();
 
-        for (int i = 0; i < routeDtos.size(); i++) {
-            Route route = routes.get(i);
-            RouteDTO dto = routeDtos.get(i);
-            for (int j = 0; j < dto.getStopsOnRoute().size(); j++) {
-                dto.getStopsOnRoute().get(j).setPhoto(
-                        List.of(convertPhotoInfoToByte(route.getStopsOnRoute().get(j).getPhoto().get(0)))
-                );
-            }
-        }
+//        for (int i = 0; i < routeDtos.size(); i++) {
+//            Route route = routes.get(i);
+//            RouteDTO dto = routeDtos.get(i);
+//            for (int j = 0; j < dto.getStopsOnRoute().size(); j++) {
+//                dto.getStopsOnRoute().get(j).setPhoto(
+//                        List.of(convertPhotoInfoToByte(route.getStopsOnRoute().get(j).getPhoto().get(0)))
+//                );
+//            }
+//        }
 
         return new ResponseEntity<>(routeDtos, HttpStatus.OK);
     }
@@ -246,6 +247,45 @@ public class RouteRestController {
         route.get().setAudioMetaInfo(null);
         routeDataService.save(route.get());
         return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @GetMapping("/photos")
+    public ResponseEntity<?> getAllPhotosByRouteId(@RequestParam(name = "routeId") Long routeId){
+        Optional<Route> route = routeDataService.getById(routeId);
+        if(route.isEmpty()){
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        var entity = route.get();
+        HashMap<Long, List<byte[]>> pointsPhotos = new HashMap<>();
+        entity.getOrderedPoints().forEach(point -> {
+            var futures = getPhotosFutures(point.getPhoto());
+            CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+            var photoBytes = futures.stream().map(CompletableFuture::join).collect(Collectors.toList());
+            pointsPhotos.put(point.getId(), photoBytes);
+        });
+
+        return new ResponseEntity<>(pointsPhotos, HttpStatus.OK);
+    }
+
+    private List<CompletableFuture<byte[]>> getPhotosFutures(List<PhotoMetaInfo> metaInfos){
+        ExecutorService executor = Executors.newFixedThreadPool(metaInfos.size());
+        // TODO Auto-generated catch block
+
+        return metaInfos.stream().map(
+                info -> CompletableFuture.supplyAsync(
+                        () -> {
+                            S3Object s3Object = getS3Object(info.getBucketName(), info.getKey());
+                            byte[] bytes = null;
+                            try {
+                                bytes =  convertS3objectToByteArray(s3Object);
+                            } catch (IOException e) {
+                                // TODO Auto-generated catch block
+                                e.printStackTrace();
+                            }
+                            return bytes;
+                        },executor)
+
+        ).toList();
     }
 
     private byte[] convertMetaInfoToByte(MetaInfo metaInfo) throws IOException {
