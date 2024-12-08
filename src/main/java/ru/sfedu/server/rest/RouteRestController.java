@@ -256,12 +256,12 @@ public class RouteRestController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
         var entity = route.get();
-        HashMap<Long, List<byte[]>> pointsPhotos = new HashMap<>();
+        List<byte[]> pointsPhotos = new ArrayList<>();
         entity.getOrderedPoints().forEach(point -> {
             var futures = getPhotosFutures(point.getPhoto());
             CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
             var photoBytes = futures.stream().map(CompletableFuture::join).collect(Collectors.toList());
-            pointsPhotos.put(point.getId(), photoBytes);
+            pointsPhotos.addAll(photoBytes);
         });
 
         return new ResponseEntity<>(pointsPhotos, HttpStatus.OK);
